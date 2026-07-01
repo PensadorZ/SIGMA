@@ -1,0 +1,41 @@
+# Secretos
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+
+# Checkpoints LangGraph
+checkpoints.db
+*.db-shm
+*.db-wal
+
+# Datos - no versionar datasets
+data/*.csv
+data/*.jsonl
+data/*.parquet
+
+# Modelos ML descargados
+models/
+*.bin
+*.safetensors
+
+# Outputs del pipeline
+outputs/*
+!outputs/.gitkeep
+
+# Logs
+logs/*.log
+!logs/.gitkeep
+
+# IDEs
+.vscode/settings.json
+.idea/
+
+# macOS
+.DS_Store
