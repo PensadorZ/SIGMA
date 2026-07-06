@@ -1,0 +1,23 @@
+[project]
+name = "sigma"
+version = "0.1.0"
+description = "SIGMA — Sistema Integrado para la Gestión Multiagente"
+requires-python = ">=3.12"
+dependencies = [
+    "psycopg2-binary>=2.9",
+    "redis>=5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-bdd>=7.0",
+]
+langfuse = [
+    "langfuse>=2.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["skills"]
+python_files = ["test_*.py"]
+addopts = "--import-mode=importlib --ignore=tests/hist_diagnoses_tests_202607"

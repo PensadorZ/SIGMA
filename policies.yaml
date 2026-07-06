@@ -1,0 +1,66 @@
+# policies.yaml — Políticas centralizadas del ecosistema SIGMA
+# Versión: 1.0.0
+# Estado: Operativo mínimo (Fase 3.4 del Roadmap Técnico)
+#
+# Este archivo gobierna dos clases de decisiones que requieren control
+# centralizado, fuera del alcance de cualquier defaults.yaml individual:
+#   1. Umbrales estadísticos sensibles (ADR-001) — ej. drift_threshold
+#   2. Permisos estructurales de herramientas (ADR-005) — capa estructural
+#      del Policy Server, evaluada en <5ms antes de la capa semántica.
+#
+# Ambas clases viven aquí por el mismo motivo: relajar un umbral
+# estadístico crítico sin que nadie lo note es tan peligroso como
+# relajar un permiso de acceso. La gobernanza de ambos debe ser
+# auditable desde un único punto, no dispersa en cada skill.
+
+# ── UMBRALES ESTADÍSTICOS (ADR-001) ───────────────────────────────────────
+statistical_validator:
+  drift_method: ks_test               # única opción soportada (no PSI, ver SKILL.md 0004 v1.0.1)
+  drift_threshold: 0.05               # p-value bajo el cual se declara drift significativo
+  leakage_correlation_threshold: 0.95 # correlación que activa REJECTED directo
+  leakage_temporal_threshold: 0.85    # correlación Spearman que activa warning en pre_processing
+
+# ── CAPA ESTRUCTURAL DEL POLICY SERVER (ADR-005) ──────────────────────────
+# Reglas deterministas evaluadas antes de cualquier llamada a herramienta.
+# Resuelven ~95% de las decisiones sin pasar a la capa semántica (LLM juez).
+policy_server:
+  environments:
+    dev:
+      deny_tools: ["deploy_netlify", "write_prod_table"]
+      allow_tools: ["read_any", "write_dev_table", "write_test_table"]
+    production:
+      deny_tools: ["install_package"]
+      require_approval: ["write_prod_table", "deploy_netlify"]
+
+  roles:
+    data_cleanser:
+      max_rows_per_write: 100000
+      allowed_tables_prefix: ["_dev", "_test", "_stg", "_cleaned", "_rejected"]
+      denied_tables_prefix: ["_prod"]
+    data_ingestion:
+      allowed_tables_prefix: ["_raw"]
+      denied_tables_prefix: ["_prod"]
+    statistical_validator:
+      allowed_tables_prefix: []   # solo lectura, no escribe tablas de datos
+      denied_tools: ["write_table", "modify_table"]
+    orchestrator:
+      can_escalate_to_hitl: true
+      can_spawn_workers: true
+
+  patterns:
+    deny_if_output_contains:
+      - regex: "(?i)(api_key|password|secret|token)\\s*=\\s*['\"][^'\"]{8,}"
+        reason: "Posible credencial hardcodeada en output (ADR-010)"
+
+# ── APROBACIÓN (ADR-004) ──────────────────────────────────────────────────
+approval:
+  notification_mechanism: redis       # redis (default) | webhook
+  webhook_url: null                   # ${APPROVAL_WEBHOOK_URL} si notification_mechanism: webhook
+  webhook_timeout_ms: 2000
+  webhook_retries: 3
+  approval_timeout_seconds: 300       # ADR-004 — timeout por defecto del polling a Redis
+
+# ── FAIL-CLOSED (ADR-005) ─────────────────────────────────────────────────
+# Si el Policy Server no responde dentro de este umbral, la llamada se
+# bloquea automáticamente y se registra POLICY_SERVER_TIMEOUT en Langfuse.
+policy_server_timeout_ms: 100

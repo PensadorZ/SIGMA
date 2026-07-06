@@ -1,0 +1,233 @@
+# =============================================================================
+# eval_adherencia.yaml — Skill 0008: sentiment-analyzer
+# SIGMA v1.5 · Eco MultiAgentes 3 Skills 1
+# Propósito: evaluar que el skill cumple sus contratos ADR, LTL y K ⊆ X
+#            en cada ejecución registrada en Langfuse.
+# Frecuencia: 100% de ejecuciones en modo Dev; 20% en modo Full.
+# =============================================================================
+
+eval_id: "eval-0008-adherencia"
+skill_id: "0008"
+skill_name: "sentiment-analyzer"
+version: "1.0.0"
+evaluator: "deterministic"
+
+# -----------------------------------------------------------------------------
+# Dimensiones de evaluación (alineadas con ADR-007: 7 dimensiones)
+# -----------------------------------------------------------------------------
+dimensions:
+
+  # Dimensión 1 — Corrección funcional
+  - id: D1
+    name: "Corrección funcional"
+    checks:
+
+      - id: D1-C1
+        description: "Todas las filas de processed_data tienen registro en sentiment_results"
+        assertion: |
+          COUNT(sentiment_results WHERE trace_id = output.trace_id)
+          == output.num_classified
+        severity: critical
+        adr: ADR-007
+        skip_if: "output.status == 'error'"
+
+      - id: D1-C2
+        description: "Cada sentiment es un valor válido del enum"
+        assertion: |
+          ALL(sentiment_results WHERE trace_id = output.trace_id,
+              sentiment IN ['POSITIVE','NEGATIVE','NEUTRAL','UNCLEAR'])
+        severity: critical
+        adr: ADR-007
+        skip_if: "output.status == 'error'"
+
+      - id: D1-C3
+        description: "Cada confidence_score está entre 0.0 y 1.0"
+        assertion: |
+          ALL(sentiment_results WHERE trace_id = output.trace_id
+              AND confidence_score IS NOT NULL,
+              0.0 <= confidence_score <= 1.0)
+        severity: critical
+        adr: ADR-007
+        skip_if: "output.status == 'error'"
+
+      - id: D1-C4
+        description: "pct_unclear es consistente con num_unclear y num_classified"
+        assertion: |
+          abs(output.pct_unclear -
+              (output.num_unclear / output.num_classified * 100)) < 0.01
+        severity: high
+        adr: ADR-007
+        skip_if: "output.status == 'error' OR output.num_classified == 0"
+
+  # Dimensión 2 — Adherencia epistémica (K ⊆ X)
+  - id: D2
+    name: "Adherencia epistémica K ⊆ X"
+    checks:
+
+      - id: D2-C1
+        description: "UNCLEAR se asigna si y solo si confidence < umbral"
+        assertion: |
+          ALL(sentiment_results WHERE trace_id = output.trace_id
+              AND sentiment == 'UNCLEAR',
+              confidence_score < 0.65)
+          AND
+          ALL(sentiment_results WHERE trace_id = output.trace_id
+              AND sentiment != 'UNCLEAR'
+              AND confidence_score IS NOT NULL,
+              confidence_score >= 0.65)
+        severity: critical
+        adr: ADR-008
+
+      - id: D2-C2
+        description: "clean_text en sentiment_results coincide con processed_data"
+        assertion: |
+          ALL(sentiment_results s JOIN processed_data p ON s.row_id = p.row_id
+              WHERE s.trace_id = output.trace_id,
+              s.clean_text == p.clean_text)
+        severity: high
+        adr: ADR-008
+        skip_if: "output.dev_mode == True"
+
+      - id: D2-C3
+        description: "No hay filas con clean_text vacío y sentiment no nulo"
+        assertion: |
+          COUNT(sentiment_results WHERE trace_id = output.trace_id
+                AND (clean_text IS NULL OR clean_text == '')
+                AND sentiment IS NOT NULL) == 0
+        severity: critical
+        adr: ADR-008
+
+  # Dimensión 3 — Seguridad y contención
+  - id: D3
+    name: "Seguridad y contención"
+    checks:
+
+      - id: D3-C1
+        description: "processed_data no fue modificada durante la ejecución"
+        assertion: "processed_data_checksum_before == processed_data_checksum_after"
+        severity: critical
+        adr: ADR-005
+
+      - id: D3-C2
+        description: "No se escribió en tablas distintas a sentiment_results"
+        assertion: |
+          tables_written_during_execution == ['sentiment_results']
+        severity: critical
+        adr: ADR-005
+        skip_if: "output.status == 'error'"
+
+      - id: D3-C3
+        description: "extra_metadata es null en todas las filas escritas por el skill"
+        assertion: |
+          ALL(sentiment_results WHERE trace_id = output.trace_id,
+              extra_metadata IS NULL)
+        severity: medium
+        adr: ADR-005
+        note: "El Orquestador puede enriquecer extra_metadata post-ejecución."
+
+  # Dimensión 4 — Trazabilidad
+  - id: D4
+    name: "Trazabilidad Langfuse"
+    checks:
+
+      - id: D4-C1
+        description: "Langfuse recibe el evento de inicio sentiment-analyzer.start"
+        assertion: "langfuse_event_exists('sentiment-analyzer.start', trace_id=output.trace_id)"
+        severity: high
+        adr: ADR-009
+
+      - id: D4-C2
+        description: "Langfuse recibe exactamente un evento de cierre"
+        assertion: |
+          langfuse_event_exists('sentiment-analyzer.success', trace_id=output.trace_id)
+          XOR
+          langfuse_event_exists('sentiment-analyzer.error', trace_id=output.trace_id)
+        severity: critical
+        adr: ADR-009
+
+      - id: D4-C3
+        description: "El evento de success contiene todos los campos obligatorios"
+        assertion: |
+          langfuse_event_has_fields(
+            'sentiment-analyzer.success',
+            ['num_classified','num_unclear','pct_unclear','avg_confidence',
+             'min_confidence','max_confidence','batches_processed',
+             'duration_ms','model_name']
+          )
+        severity: high
+        adr: ADR-009
+        skip_if: "output.status == 'error'"
+
+      - id: D4-C4
+        description: "model_name en Langfuse coincide con el modelo en defaults.yaml"
+        assertion: |
+          langfuse_event_field('sentiment-analyzer.success','model_name')
+          == 'cardiffnlp/twitter-roberta-base-sentiment-latest'
+        severity: medium
+        adr: ADR-009
+        skip_if: "output.status == 'error'"
+
+  # Dimensión 5 — Calidad del corpus (alerta, no bloqueante)
+  - id: D5
+    name: "Calidad del corpus"
+    checks:
+
+      - id: D5-C1
+        description: "Alerta si el porcentaje de UNCLEAR supera el 30%"
+        assertion: "output.pct_unclear <= 30.0"
+        severity: medium
+        adr: ADR-007
+        on_failure: "add_warning('high_unclear_rate')"
+        note: |
+          Un pct_unclear > 30% puede indicar que el corpus contiene
+          muchos textos en idiomas no soportados por el modelo, textos
+          muy cortos, o ruido residual del preprocesado.
+
+  # Dimensión 6 — Modo Dev
+  - id: D6
+    name: "Aislamiento del modo Dev"
+    checks:
+
+      - id: D6-C1
+        description: "En modo Dev, warnings contiene 'synthetic_data'"
+        assertion: |
+          IF output.dev_mode == True
+          THEN 'synthetic_data' IN output.warnings
+        severity: medium
+        adr: ADR-009
+
+      - id: D6-C2
+        description: "En modo Dev no se escribe en PostgreSQL de producción"
+        assertion: |
+          IF output.dev_mode == True
+          THEN NOT postgres_table_modified('sentiment_results')
+        severity: high
+        adr: ADR-005
+
+  # Dimensión 7 — Presupuesto
+  - id: D7
+    name: "Adherencia al presupuesto"
+    checks:
+
+      - id: D7-C1
+        description: "El costo real del skill es $0.00 (modelo local)"
+        assertion: "actual_cost_usd == 0.00"
+        severity: high
+        adr: ADR-004
+
+# -----------------------------------------------------------------------------
+# Umbrales de aprobación
+# -----------------------------------------------------------------------------
+thresholds:
+  critical_pass_rate: 1.00
+  high_pass_rate: 0.85
+  medium_pass_rate: 0.70
+
+# -----------------------------------------------------------------------------
+# Salida del evaluador
+# -----------------------------------------------------------------------------
+output:
+  format: "json"
+  destination: "evals/results/0008-sentiment-analyzer/{trace_id}.json"
+  emit_to_langfuse: true
+  langfuse_event: "eval.adherencia.0008"

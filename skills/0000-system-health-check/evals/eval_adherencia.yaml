@@ -1,0 +1,74 @@
+eval_id: "eval-0000-adherencia"
+skill_id: "0000"
+skill_name: "system-health-check"
+version: "2.0.0"
+evaluator: "deterministic"
+
+dimensions:
+  - id: D1
+    name: "Corrección funcional"
+    checks:
+      - id: D1-C1
+        description: "verdict BLOCKED implica al menos un servicio crítico caído"
+        assertion: |
+          IF output.verdict == 'BLOCKED'
+          THEN len(output.critical_services_down) > 0
+        severity: critical
+        skip_if: "result.status != 'error'"
+      - id: D1-C2
+        description: "verdict DEGRADED implica cero críticos caídos y al menos un opcional caído"
+        assertion: |
+          IF output.verdict == 'DEGRADED'
+          THEN len(output.critical_services_down) == 0
+               AND len(output.optional_services_down) > 0
+        severity: critical
+        skip_if: "result.status == 'error'"
+
+  - id: D2
+    name: "Consistencia del veredicto"
+    checks:
+      - id: D2-C1
+        description: "HEALTHY implica cero servicios caídos, críticos u opcionales"
+        assertion: |
+          IF output.verdict == 'HEALTHY'
+          THEN len(output.critical_services_down) == 0
+               AND len(output.optional_services_down) == 0
+        severity: critical
+        skip_if: "result.status == 'error'"
+
+  - id: D3
+    name: "Seguridad y contención"
+    checks:
+      - id: D3-C1
+        description: "output está vacío cuando status es error (contrato make_error)"
+        assertion: "IF result.status == 'error' THEN result.output == {}"
+        severity: high
+
+  - id: D4
+    name: "Trazabilidad"
+    checks:
+      - id: D4-C1
+        description: "run_id y trace_id presentes en todo output exitoso"
+        assertion: |
+          output.run_id is not None AND output.trace_id is not None
+        severity: high
+        skip_if: "result.status == 'error'"
+
+  - id: D5
+    name: "Resiliencia (verificado por tests de estrés dedicados)"
+    checks:
+      - id: D5-C1
+        description: "Cada verificación de servicio respeta el timeout configurado"
+        assertion: "service.latency_ms <= (defaults.services.timeout_seconds * 1000) + margen_razonable"
+        severity: medium
+        note: "Verificado exhaustivamente en test_system_health_check_stress.py, no en runtime."
+
+thresholds:
+  critical_pass_rate: 1.00
+  high_pass_rate: 0.85
+
+output:
+  format: "json"
+  destination: "evals/results/0000-system-health-check/{trace_id}.json"
+  emit_to_langfuse: true
+  langfuse_event: "eval.adherencia.0000"

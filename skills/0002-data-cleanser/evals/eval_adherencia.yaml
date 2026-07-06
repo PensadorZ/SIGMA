@@ -1,0 +1,59 @@
+eval_id: "eval-0002-adherencia"
+skill_id: "0002"
+skill_name: "data-cleanser"
+version: "2.0.0"
+evaluator: "deterministic"
+
+dimensions:
+  - id: D1
+    name: "Corrección funcional"
+    checks:
+      - id: D1-C1
+        description: "Invariante de conteo se cumple exactamente"
+        assertion: |
+          output.num_records_output + output.num_exact_duplicates_removed +
+          output.num_near_duplicates_removed + output.num_rejected_schema
+          == output.num_records_input
+        severity: critical
+        skip_if: "output.status == 'error'"
+
+  - id: D2
+    name: "Adherencia epistémica K ⊆ X"
+    checks:
+      - id: D2-C1
+        description: "Filas con texto nulo se conservan marcadas, no se descartan"
+        assertion: |
+          COUNT(cleaned_data WHERE trace_id = output.trace_id AND had_nulls = true)
+          == output.num_nulls_flagged
+        severity: high
+        skip_if: "output.status == 'error'"
+
+  - id: D3
+    name: "Seguridad y contención"
+    checks:
+      - id: D3-C1
+        description: "Ninguna fila con row_id inválido llega a cleaned_data"
+        assertion: |
+          COUNT(cleaned_data c JOIN cleaned_rejected r
+                ON c.row_id = r.row_id AND c.trace_id = r.trace_id) == 0
+        severity: critical
+        skip_if: "output.status == 'error'"
+
+  - id: D4
+    name: "Trazabilidad"
+    checks:
+      - id: D4-C1
+        description: "run_id presente"
+        assertion: "output.run_id is not None"
+        severity: high
+        skip_if: "output.status == 'error'"
+
+thresholds:
+  critical_pass_rate: 1.00
+  high_pass_rate: 0.85
+
+output:
+  format: "json"
+  destination: "evals/results/0002-data-cleanser/{trace_id}.json"
+  emit_to_langfuse: true
+  langfuse_event: "eval.adherencia.0002"

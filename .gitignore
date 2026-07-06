@@ -39,3 +39,6 @@ logs/*.log
 
 # macOS
 .DS_Store
+
+# Credenciales de Zulip
+zuliprc

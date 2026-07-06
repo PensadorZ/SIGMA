@@ -1,0 +1,90 @@
+# =============================================================================
+# defaults.yaml — Skill 0003: data-preprocessor
+# SIGMA v1.5 · Eco MultiAgentes 4 Skills 2 (fusión v2.0.0)
+# Autor: Prof. Marx Agustín García Delgado
+# =============================================================================
+# NOTA DE ALCANCE — decisión de Marx García, confirmada en esta sesión:
+# apply_smote, apply_class_weight y apply_pca están DESACTIVADOS por
+# defecto porque el pipeline actual (Tirendaz → RoBERTa) no tiene una
+# columna objetivo en esta etapa — la etiqueta de sentimiento la genera
+# 0008-sentiment-analyzer DESPUÉS de este skill, no antes. Estos flags
+# existen para que el MISMO skill sirva también en un futuro pipeline
+# tipo Kaggle (dataset ya etiquetado) sin reescribir código — solo
+# cambiando estos valores a true.
+# =============================================================================
+
+skill:
+  id: "0003"
+  name: "data-preprocessor"
+  version: "2.0.0"
+  sigma_variant: "${SIGMA_VARIANT:-Full}"
+
+# -----------------------------------------------------------------------------
+# Detección de columna objetivo (target_column) — automática
+# -----------------------------------------------------------------------------
+target_detection:
+  # El skill busca estas columnas, en orden, dentro de raw_data.metadata.
+  # La primera que exista se usa como target_column. Si ninguna existe,
+  # apply_smote y apply_class_weight se ignoran automáticamente aunque
+  # estén en true — no hay error, solo se omiten esas transformaciones.
+  candidate_columns:
+    - "sentiment_label"
+    - "label"
+    - "target"
+
+# -----------------------------------------------------------------------------
+# Detección y exclusión de leakage
+# -----------------------------------------------------------------------------
+leakage:
+  # Columnas de raw_data.metadata que se excluyen de las features
+  # numéricas antes de escalar — reformulado respecto a la versión
+  # original: aquí no es "leakage del target de entrenamiento" sino
+  # "columnas que no deberían influir en la clasificación de sentimiento".
+  excluded_columns:
+    - "future_engagement"
+
+# -----------------------------------------------------------------------------
+# Balanceo de clases — DESACTIVADO por defecto en el pipeline Tirendaz
+# -----------------------------------------------------------------------------
+class_balancing:
+  # SMOTE genera filas SINTÉTICAS — no se insertan en processed_data
+  # porque no tienen texto real (ver SKILL.md sección 3 para el porqué).
+  # Solo se activa si target_column fue detectada Y este flag es true.
+  apply_smote: false
+
+  # class_weight NO genera filas — es solo una métrica de ponderación
+  # expuesta en el output para que un futuro entrenador la consuma.
+  # Mismo requisito de target_column detectada.
+  apply_class_weight: false
+
+  # Solo se aplica balanceo si el ratio mayoría:minoría supera esto.
+  imbalance_ratio_threshold: 3.0
+
+# -----------------------------------------------------------------------------
+# Reducción de dimensionalidad — DESACTIVADO por defecto
+# -----------------------------------------------------------------------------
+dimensionality_reduction:
+  # A diferencia de SMOTE, PCA sí se puede aplicar por-fila sin generar
+  # filas sintéticas — los componentes se pueden escribir en
+  # processed_data.features (JSONB) para cada fila real sin conflicto.
+  apply_pca: false
+
+  # Varianza explicada mínima a conservar (float 0-1) o número fijo de
+  # componentes (int). Aquí, float = proporción de varianza.
+  n_components: 0.95
+
+  # PCA no tiene sentido con menos de esta cantidad de features numéricas.
+  min_features_required: 3
+
+# -----------------------------------------------------------------------------
+# Modo Dev
+# -----------------------------------------------------------------------------
+dev_mode:
+  synthetic_rows: 500
+
+langfuse:
+  trace_prefix: "data-preprocessor"
+  events:
+    - data-preprocessor.start
+    - data-preprocessor.success
+    - data-preprocessor.error

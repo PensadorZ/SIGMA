@@ -1,0 +1,152 @@
+# =============================================================================
+# defaults.yaml — Skill 0011: viz-reporter
+# SIGMA v1.5 · Eco MultiAgentes 3 Skills 1
+# Autor: Prof. Marx Agustín García Delgado
+# Versión: 1.0.0
+# =============================================================================
+# Todos los valores aquí son sobrescribibles por variables de entorno
+# o por parámetros del pipeline YAML en tiempo de invocación.
+# Ninguna credencial debe aparecer en este archivo (ADR-010).
+# =============================================================================
+
+skill:
+  id: "0011"
+  name: "viz-reporter"
+  version: "1.0.0"
+  sigma_variant: "${SIGMA_VARIANT:-Full}"
+
+# -----------------------------------------------------------------------------
+# Motor de visualización
+# -----------------------------------------------------------------------------
+visualization:
+  # Orden de prioridad para selección autónoma del motor.
+  # El skill intenta cada motor en este orden hasta encontrar uno disponible.
+  engine_priority:
+    - plotly
+    - duckdb+plotly
+    - matplotlib
+
+  # Umbral de filas para activar pre-agregación con DuckDB.
+  # Por encima de este valor se selecciona "duckdb+plotly" en lugar de "plotly".
+  large_dataset_threshold: 500000
+
+  # Número mínimo de gráficos que debe contener el dashboard generado.
+  min_graphs: 3
+
+  # Gráficos que se intentan generar siempre (si los datos los permiten).
+  default_graphs:
+    - sentiment_distribution    # Distribución de sentimiento (positivo/negativo/neutral)
+    - top_engagement            # Top N registros por engagement_score
+    - lang_distribution         # Distribución por idioma (columna "lang")
+
+  # Formato de salida principal.
+  output_format: "html"
+
+  # Ruta de destino en MinIO.
+  # {trace_id} es un placeholder resuelto por ContextResolver (ADR-006).
+  output_path: "dashboards/{trace_id}/index.html"
+
+# -----------------------------------------------------------------------------
+# Modo Dev (SIGMA_VARIANT=Dev)
+# -----------------------------------------------------------------------------
+dev_mode:
+  # Número de filas del dataset sintético generado en modo Dev.
+  synthetic_rows: 500
+
+  # Distribución sintética de sentimiento (debe sumar 1.0).
+  synthetic_sentiment_distribution:
+    positive: 0.55
+    negative: 0.25
+    neutral: 0.20
+
+  # Rango sintético de engagement_score.
+  synthetic_engagement_range:
+    min: 0
+    max: 1000
+
+# -----------------------------------------------------------------------------
+# Provider LLM para el resumen textual
+# -----------------------------------------------------------------------------
+summary:
+  # Provider activo. Opciones: ollama | gemini | none
+  # "none" omite el resumen textual sin error ni advertencia.
+  provider: "${SIGMA_SUMMARY_PROVIDER:-ollama}"
+
+  # Modelo específico según el provider seleccionado.
+  models:
+    ollama: "${OLLAMA_SUMMARY_MODEL:-llama3.2:3b}"
+    gemini: "${GEMINI_SUMMARY_MODEL:-gemini-1.5-flash}"
+
+  # Timeout de la llamada a Ollama, en segundos. Subido de 30 a 90 tras
+  # confirmar en producción (5 de julio de 2026) que 30s no alcanza para
+  # un arranque en frío del modelo -- Read timed out real observado.
+  ollama_timeout_seconds: "${SIGMA_OLLAMA_TIMEOUT:-90}"
+
+  # Límite de palabras del resumen (contrato K ⊆ X — ADR-008).
+  max_words: 250
+
+  # Número de palabras clave numeradas al final del resumen.
+  keywords_count:
+    min: 5
+    max: 8
+
+  # Temperatura del modelo (0 = determinista, preferible para K ⊆ X).
+  temperature: 0.1
+
+  # Máximo de tokens de salida del LLM.
+  max_tokens: 400
+
+  # Timeout en segundos para la invocación del LLM.
+  timeout_seconds: 30
+
+# -----------------------------------------------------------------------------
+# Almacenamiento (MinIO)
+# -----------------------------------------------------------------------------
+storage:
+  # Bucket de destino para dashboards generados.
+  bucket: "dashboards"
+
+  # Prefijo dentro del bucket.
+  # {trace_id} resuelto por ContextResolver (ADR-006).
+  prefix: "{trace_id}"
+
+  # Tiempo de retención del artefacto en días (0 = indefinido).
+  retention_days: 0
+
+# -----------------------------------------------------------------------------
+# Presupuesto (ADR-004)
+# -----------------------------------------------------------------------------
+budget:
+  # Presupuesto máximo en USD para este skill.
+  # Si el costo estimado del LLM supera este valor, se activa HITL.
+  max_usd: 0.20
+
+  # Costo estimado por 1000 tokens (referencia para estimación previa).
+  estimated_cost_per_1k_tokens:
+    ollama: 0.00      # Local, sin costo de API
+    gemini: 0.0001    # Tier gratuito de Gemini
+
+# -----------------------------------------------------------------------------
+# Trazabilidad Langfuse
+# -----------------------------------------------------------------------------
+langfuse:
+  trace_prefix: "viz-reporter"
+  events:
+    - viz-reporter.start
+    - viz-reporter.motor_selected
+    - viz-reporter.html_generated
+    - viz-reporter.summary_generated
+    - viz-reporter.minio_persisted
+    - viz-reporter.success
+    - viz-reporter.error
+
+# -----------------------------------------------------------------------------
+# Integración opcional Netlify (ADR-012)
+# La activación se controla desde el pipeline YAML, no desde aquí.
+# Las credenciales van en .env, nunca en este archivo.
+# -----------------------------------------------------------------------------
+netlify:
+  enabled: false          # Se sobrescribe desde el pipeline YAML si se activa
+  site_id_env: "NETLIFY_SITE_ID"
+  auth_token_env: "NETLIFY_AUTH_TOKEN"
+  deploy_path: "dashboards/{trace_id}/"

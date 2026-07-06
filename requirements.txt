@@ -1,0 +1,101 @@
+# =============================================================================
+# requirements.txt — SIGMA Hito 1
+# SIGMA v1.6 · Eco MultiAgentes 4 Skills 2
+# Autor: Prof. Marx Agustín García Delgado
+# =============================================================================
+# Uso:
+#   pip install -r requirements.txt
+#
+# Este archivo consolida TODOS los paquetes que resultaron necesarios a lo
+# largo de la construcción y depuración del Hito 1 — incluye los que se
+# instalaron en distintos momentos de distintas sesiones de trabajo, para
+# que un desarrollador nuevo no tenga que reconstruir la lista leyendo
+# código fuente ni repetir el proceso de descubrimiento que a nosotros
+# nos tomó varias horas (ver especialmente la nota sobre langfuse abajo).
+#
+# ✅ VERIFICADO CON CORRIDA REAL COMPLETA — 5 de julio de 2026:
+# este conjunto exacto de versiones (instalado limpio, con
+# PYTHONNOUSERSITE=1 activo para evitar contaminación con paquetes
+# globales por usuario) ejecutó el pipeline completo del Hito 1 de
+# principio a fin contra infraestructura Docker real y el dataset
+# Tirendaz real: los 6 skills (0000→0001→0002→0003→0008→0011)
+# completados con éxito, incluyendo clasificación de sentimiento real
+# con RoBERTa (cardiffnlp/twitter-roberta-base-sentiment-latest) y
+# persistencia real del dashboard en MinIO. No es solo "pasa las
+# pruebas unitarias" — corrió el sistema real completo.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Orquestación del pipeline (LangGraph + HITL con interrupt/checkpointer)
+# -----------------------------------------------------------------------------
+langgraph
+langgraph-checkpoint-sqlite
+
+# -----------------------------------------------------------------------------
+# Observabilidad — Langfuse
+# -----------------------------------------------------------------------------
+# ADVERTENCIA CRÍTICA — NO QUITAR ESTA RESTRICCIÓN DE VERSIÓN:
+#
+# El stack Full de SIGMA usa Langfuse v2 autoalojado (ghcr.io/langfuse/
+# langfuse:2 en docker-compose.yml) — deliberado, para evitar la
+# dependencia de ClickHouse que exige la v3+.
+#
+# langfuse>=3 (el SDK Python) usa una API nativa de OpenTelemetry que
+# envía trazas a la ruta /api/public/otel — ESA RUTA SOLO EXISTE EN
+# SERVIDORES LANGFUSE >=3.22.0. Contra un servidor v2 real, esa ruta
+# responde 404 (confirmado con curl directo, no es un problema de
+# configuración ni de puerto — la ruta simplemente no existe en la v2).
+#
+# Si alguna vez actualizas esto a langfuse>=3, DEBES también subir el
+# servidor Docker a v3.22+, lo cual reintroduce ClickHouse. Esa es una
+# decisión de arquitectura completa, no un simple `pip install --upgrade`.
+langfuse<3
+
+# -----------------------------------------------------------------------------
+# Infraestructura — clientes de PostgreSQL, Redis, MinIO
+# -----------------------------------------------------------------------------
+psycopg2-binary
+redis
+minio
+
+# -----------------------------------------------------------------------------
+# Datos y ML — preprocesado (0003), sentimiento (0008)
+# -----------------------------------------------------------------------------
+pandas
+numpy
+scikit-learn
+imbalanced-learn
+transformers
+torch
+langdetect==1.0.9      # Detección real de idioma en 0003 (reemplaza heurística de palabras clave)
+
+# -----------------------------------------------------------------------------
+# Visualización — dashboards (0011)
+# -----------------------------------------------------------------------------
+plotly
+matplotlib
+duckdb
+
+# -----------------------------------------------------------------------------
+# Contratos de datos y configuración
+# -----------------------------------------------------------------------------
+pydantic
+pyyaml
+
+# -----------------------------------------------------------------------------
+# HTTP — Zulip, Ollama, healthchecks
+# -----------------------------------------------------------------------------
+requests
+python-dotenv
+
+# -----------------------------------------------------------------------------
+# Servidor del webhook HITL (webhook_receiver.py)
+# -----------------------------------------------------------------------------
+fastapi
+uvicorn
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+pytest
+pytest-bdd

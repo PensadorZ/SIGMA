@@ -1,0 +1,203 @@
+
+# =============================================================================
+# SIGMA HITO-1 — Infraestructura de Desarrollo
+# SIGMA V.1.5 | Stack 100% Open Source & Gratuito
+# =============================================================================
+
+# =============================================================================
+# NOTA IMPORTANTE PARA EL ENTORNO PYTHON (FUERA DE DOCKER)
+# -----------------------------------------------------------------------------
+# Para que el decorador @observe de Langfuse funcione correctamente,
+# debes instalar estas dependencias en tu entorno Conda:
+#   pip install -r requirements.txt
+#   (langchain, langfuse-langchain, langfuse, python-dotenv)
+# Este script prueba la integración con Langfuse usando la API v4.12.0. Habiendo instalado
+# 'pip install langchain' y 'pip install langfuse-langchain' en el CMD dentro de Conda. 
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# BASE DE DATOS PRINCIPAL (PostgreSQL)
+# ---------------------------------------------------------------------------
+services:
+  postgres:
+    image: postgres:15
+    container_name: sigma_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - sigma_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# ---------------------------------------------------------------------------
+# CACHÉ Y COLA DE WORKERS (Redis)
+# ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: sigma_redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - sigma_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# ---------------------------------------------------------------------------
+# ALMACENAMIENTO DE OBJETOS (MinIO)
+# ---------------------------------------------------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: sigma_minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - sigma_minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+# =============================================================================
+# OBSERVABILIDAD (Langfuse)
+# =============================================================================
+# Elige UNA de las dos opciones siguientes:
+#   Opción A (recomendada): Langfuse v2 (estable, sin ClickHouse)
+#   Opción B: Langfuse v3 (requiere ClickHouse) – descomentar y comentar la v2
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# BASE DE DATOS DE LANGFUSE (común a ambas versiones)
+# ---------------------------------------------------------------------------
+  langfuse-db:
+    image: postgres:15
+    container_name: sigma_langfuse_db
+    environment:
+      POSTGRES_DB: langfuse
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: langfuse
+    ports:
+      - "5434:5432"
+    volumes:
+      - sigma_langfuse_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # LANGFUSE V2 — Observabilidad de Agentes
+  # Dashboard: http://localhost:3001
+  # NOTA: Fijado a v2 — v3 requiere ClickHouse (infraestructura adicional innecesaria)
+  # ---------------------------------------------------------------------------
+  langfuse:
+    image: ghcr.io/langfuse/langfuse:2
+    container_name: sigma_langfuse
+    restart: unless-stopped
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: postgresql://langfuse:langfuse@langfuse-db:5432/langfuse
+      DIRECT_URL: postgresql://langfuse:langfuse@langfuse-db:5432/langfuse
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:-secret-key-para-sigma}
+      SALT: ${LANGFUSE_SALT:-una-salt-secreta}
+      TELEMETRY_ENABLED: "false"
+      NEXTAUTH_URL: http://localhost:3001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/public/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+# =============================================================================
+# OPCIÓN A: Langfuse v2 (NO necesita ClickHouse)
+# =============================================================================
+#  langfuse:
+#    image: ghcr.io/langfuse/langfuse:2.0.0
+#    container_name: sigma_langfuse
+#    depends_on:
+#      langfuse-db:
+#        condition: service_healthy
+#    environment:
+#      DATABASE_URL: postgresql://langfuse:langfuse@langfuse-db:5432/langfuse
+#      DIRECT_URL: postgresql://langfuse:langfuse@langfuse-db:5432/langfuse
+#      NEXTAUTH_SECRET: secret-key-para-sigma
+#      NEXTAUTH_URL: http://localhost:3001
+#    ports:
+#      - "3001:3000"
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+#      interval: 60s
+#      timeout: 30s
+#      retries: 5
+
+# =============================================================================
+# OPCIÓN B: Langfuse v3 (requiere ClickHouse)
+# =============================================================================
+#  langfuse:
+#    image: langfuse/langfuse:latest
+#    container_name: sigma_langfuse
+#    depends_on:
+#      langfuse-db:
+#        condition: service_healthy
+#      clickhouse:
+#        condition: service_healthy    # Espera a que ClickHouse esté sano
+#    environment:
+#      DATABASE_URL: postgresql://langfuse:langfuse@langfuse-db:5432/langfuse
+#      CLICKHOUSE_URL: http://clickhouse:8123
+#      CLICKHOUSE_MIGRATION_URL: http://clickhouse:8123   # <--- ESTA ES LA CLAVE
+#      NEXTAUTH_SECRET: secret-key-para-sigma
+#      NEXTAUTH_URL: http://localhost:3001
+#    ports:
+#      - "3001:3000"
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+#      interval: 60s   # Más tiempo para que las migraciones terminen
+#      timeout: 30s
+#      retries: 10
+# ---------------------------------------------------------------------------
+# CLICKHOUSE (solo para la Opción B)
+# ---------------------------------------------------------------------------
+#  clickhouse:
+#    image: clickhouse/clickhouse-server:latest
+#    container_name: sigma_clickhouse
+#    ports:
+#      - "8123:8123"
+#      - "9004:9000"
+#    volumes:
+#      - sigma_clickhouse_data:/var/lib/clickhouse
+#    healthcheck:
+#      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+#      interval: 15s
+#      timeout: 10s
+#      retries: 10
+
+# =============================================================================
+# VOLÚMENES PERSISTENTES
+# =============================================================================
+volumes:
+  sigma_postgres_data:
+  sigma_redis_data:
+  sigma_minio_data:
+  sigma_langfuse_db_data:
+#  sigma_clickhouse_data:   # Descomentar solo si usas Opción B

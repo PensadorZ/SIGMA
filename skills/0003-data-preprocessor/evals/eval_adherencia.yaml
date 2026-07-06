@@ -1,0 +1,61 @@
+eval_id: "eval-0003-adherencia"
+skill_id: "0003"
+skill_name: "data-preprocessor"
+version: "2.0.0"
+evaluator: "deterministic"
+
+dimensions:
+  - id: D1
+    name: "Corrección funcional"
+    checks:
+      - id: D1-C1
+        description: "num_processed coincide con filas reales en processed_data"
+        assertion: "output.num_processed == COUNT(processed_data WHERE trace_id = output.trace_id)"
+        severity: critical
+        skip_if: "result.status == 'error'"
+
+  - id: D2
+    name: "Adherencia de configuración condicional"
+    checks:
+      - id: D2-C1
+        description: "SMOTE/class_weight nunca se aplican sin target_column detectada"
+        assertion: |
+          IF output.target_column_detected is None
+          THEN output.class_weights is None AND output.num_smote_synthetic_rows == 0
+        severity: critical
+      - id: D2-C2
+        description: "Ninguna fila con texto sintético de SMOTE existe en processed_data"
+        assertion: |
+          output.num_smote_synthetic_rows == 0
+          OR NOT EXISTS(processed_data WHERE clean_text LIKE '%smote%')
+        severity: critical
+        note: "SMOTE nunca escribe filas — este check confirma el límite arquitectónico del SKILL.md sección 3."
+
+  - id: D3
+    name: "Seguridad y contención"
+    checks:
+      - id: D3-C1
+        description: "Columnas de leakage nunca aparecen en processed_data.features"
+        assertion: |
+          NOT ANY(processed_data.features CONTAINS key IN cfg.leakage.excluded_columns)
+        severity: critical
+        skip_if: "result.status == 'error'"
+
+  - id: D4
+    name: "Trazabilidad"
+    checks:
+      - id: D4-C1
+        description: "run_id presente"
+        assertion: "output.run_id is not None"
+        severity: high
+        skip_if: "result.status == 'error'"
+
+thresholds:
+  critical_pass_rate: 1.00
+  high_pass_rate: 0.85
+
+output:
+  format: "json"
+  destination: "evals/results/0003-data-preprocessor/{trace_id}.json"
+  emit_to_langfuse: true
+  langfuse_event: "eval.adherencia.0003"

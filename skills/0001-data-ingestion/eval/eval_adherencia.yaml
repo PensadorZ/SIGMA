@@ -1,0 +1,56 @@
+eval_id: "eval-0001-adherencia"
+skill_id: "0001"
+skill_name: "data-ingestion"
+version: "2.0.0"
+evaluator: "deterministic"
+
+dimensions:
+  - id: D1
+    name: "Corrección funcional"
+    checks:
+      - id: D1-C1
+        description: "num_records coincide con filas reales en raw_data"
+        assertion: "output.num_records == COUNT(raw_data WHERE trace_id = output.trace_id)"
+        severity: critical
+        skip_if: "output.status == 'error'"
+      - id: D1-C2
+        description: "checksum_sha256 no es nulo en modo Full exitoso"
+        assertion: "output.checksum_sha256 is not None"
+        severity: high
+        skip_if: "output.dev_mode == True OR output.status == 'error'"
+
+  - id: D2
+    name: "Integridad"
+    checks:
+      - id: D2-C1
+        description: "El checksum corresponde exactamente al archivo fuente"
+        assertion: "sha256_of_file(output.source_path) == output.checksum_sha256"
+        severity: critical
+        skip_if: "output.dev_mode == True OR output.status == 'error'"
+
+  - id: D3
+    name: "Seguridad y contención"
+    checks:
+      - id: D3-C1
+        description: "No se escribe en raw_data si status es error"
+        assertion: "IF output.status == 'error' THEN COUNT(raw_data WHERE trace_id) == 0"
+        severity: critical
+
+  - id: D4
+    name: "Trazabilidad"
+    checks:
+      - id: D4-C1
+        description: "run_id está presente y no vacío"
+        assertion: "output.run_id is not None AND len(output.run_id) > 0"
+        severity: high
+        skip_if: "output.status == 'error'"
+
+thresholds:
+  critical_pass_rate: 1.00
+  high_pass_rate: 0.85
+
+output:
+  format: "json"
+  destination: "evals/results/0001-data-ingestion/{trace_id}.json"
+  emit_to_langfuse: true
+  langfuse_event: "eval.adherencia.0001"

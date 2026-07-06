@@ -1,0 +1,58 @@
+# =============================================================================
+# defaults.yaml — Skill 0001: data-ingestion
+# SIGMA v1.5 · Eco MultiAgentes 4 Skills 2 (fusión v2.0.0)
+# Autor: Prof. Marx Agustín García Delgado
+# =============================================================================
+
+skill:
+  id: "0001"
+  name: "data-ingestion"
+  version: "2.0.0"
+  sigma_variant: "${SIGMA_VARIANT:-Full}"
+
+# -----------------------------------------------------------------------------
+# Lectura del archivo fuente
+# -----------------------------------------------------------------------------
+ingestion:
+  # Tamaño de chunk para pandas.read_csv(chunksize=...).
+  # Para 22.500 filas del Hito 1, un chunk cubre todo el archivo en una
+  # sola pasada práctica; queda configurable para datasets más grandes.
+  chunk_size: "${SIGMA_INGESTION_CHUNK_SIZE:-25000}"
+
+  # Número de workers para procesamiento paralelo de chunks.
+  # Fijo en 1 (secuencial) para el Hito 1 — ver SKILL.md sección 1
+  # para la justificación de por qué no se implementa multiprocessing
+  # todavía. Sobrescribible cuando el Hito 2 lo requiera.
+  workers: "${SIGMA_INGESTION_WORKERS:-1}"
+
+  # Columna mínima requerida en el archivo fuente.
+  required_column: "text"
+
+  # Si el archivo no trae row_id, se genera uno sintético secuencial.
+  generate_row_id_if_missing: true
+
+# -----------------------------------------------------------------------------
+# Checksum de integridad
+# -----------------------------------------------------------------------------
+integrity:
+  algorithm: "sha256"
+  # Tamaño de bloque de lectura para el cálculo del checksum (streaming,
+  # no carga el archivo completo en memoria para este cálculo).
+  read_block_size_bytes: 65536
+
+# -----------------------------------------------------------------------------
+# Modo Dev (SIGMA_VARIANT=Dev)
+# -----------------------------------------------------------------------------
+dev_mode:
+  synthetic_rows: 500
+
+# -----------------------------------------------------------------------------
+# Trazabilidad Langfuse
+# -----------------------------------------------------------------------------
+langfuse:
+  trace_prefix: "data-ingestion"
+  events:
+    - data-ingestion.start
+    - data-ingestion.chunk_complete
+    - data-ingestion.success
+    - data-ingestion.error

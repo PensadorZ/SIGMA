@@ -1,0 +1,132 @@
+# =============================================================================
+# defaults.yaml — Skill 0008: sentiment-analyzer
+# SIGMA v1.5 · Eco MultiAgentes 3 Skills 1
+# Autor: Prof. Marx Agustín García Delgado
+# Versión: 1.0.0
+# =============================================================================
+# Ninguna credencial debe aparecer en este archivo (ADR-010).
+# Todos los valores son sobrescribibles por variable de entorno.
+# =============================================================================
+
+skill:
+  id: "0008"
+  name: "sentiment-analyzer"
+  version: "1.0.0"
+  sigma_variant: "${SIGMA_VARIANT:-Full}"
+
+# -----------------------------------------------------------------------------
+# Modelo de clasificación
+# -----------------------------------------------------------------------------
+model:
+  # Modelo primario. Entrenado específicamente sobre Twitter.
+  # Soporta español, inglés y portugués nativamente.
+  name: "cardiffnlp/twitter-roberta-base-sentiment-latest"
+
+  # Ruta local del modelo descargado (~500 MB).
+  # Se obtiene de variable de entorno (ADR-010). Nunca hardcodeada aquí.
+  path: "${ROBERTA_MODEL_PATH}"
+
+  # Longitud máxima de tokens por texto.
+  # RoBERTa-base tiene límite de 512; 128 cubre el 99% de tweets reales.
+  max_length: 128
+
+  # Dispositivo de inferencia.
+  # "cpu" para entorno local con WSL2. "cuda" si hay GPU disponible.
+  # Sobrescribible con SIGMA_DEVICE=cuda para entornos con GPU.
+  device: "${SIGMA_DEVICE:-cpu}"
+
+# -----------------------------------------------------------------------------
+# Inferencia por batches
+# -----------------------------------------------------------------------------
+inference:
+  # Tamaño de batch para inferencia local en CPU.
+  #
+  # RAZONAMIENTO: RoBERTa-base (125M params) en CPU con WSL2 puede
+  # generar picos de 4-6 GB RAM con batch=64 y tweets de longitud variable.
+  # Con batch=32 el consumo se mantiene estable bajo 2-3 GB y el
+  # throughput es predecible y estable para cualquier volumen.
+  #
+  # Para 22.500 tweets (Hito 1): ~703 batches, ~15-25 min en CPU.
+  # Para 28M tweets (Hito 2): el orquestador distribuye en workers;
+  # cada worker usa batch=32 sobre su partición asignada.
+  #
+  # Sobrescribible con SIGMA_BATCH_SIZE=64 si tu máquina tiene >16 GB RAM.
+  batch_size: "${SIGMA_BATCH_SIZE:-32}"
+
+  # Timeout en segundos por batch antes de reintentar.
+  batch_timeout_seconds: 120
+
+  # Número máximo de reintentos por batch fallido.
+  max_retries_per_batch: 3
+
+# -----------------------------------------------------------------------------
+# Umbral de confianza — contrato K ⊆ X (ADR-008)
+# -----------------------------------------------------------------------------
+confidence:
+  # Umbral mínimo para asignar una etiqueta de clase.
+  # Por debajo de este valor, la fila se marca UNCLEAR.
+  # Preserva el contrato epistémico: el skill no fuerza una clase
+  # cuando el modelo no está seguro.
+  threshold: "${SIGMA_CONFIDENCE_THRESHOLD:-0.65}"
+
+  # Etiqueta asignada cuando confidence_score < threshold.
+  unclear_label: "UNCLEAR"
+
+# -----------------------------------------------------------------------------
+# Tablas de entrada y salida
+# -----------------------------------------------------------------------------
+tables:
+  input: "processed_data"
+  output: "sentiment_results"
+
+  # Columna del texto a clasificar en la tabla de entrada.
+  input_text_column: "clean_text"
+
+  # Columnas que se escriben en sentiment_results.
+  # La columna extra_metadata (JSONB) queda reservada para el orquestador.
+  output_columns:
+    - row_id           # FK a processed_data
+    - clean_text       # Copia del texto clasificado (auditoría)
+    - sentiment        # POSITIVE | NEGATIVE | NEUTRAL | UNCLEAR
+    - confidence_score # float 0.0–1.0
+    - model_name       # Nombre del modelo usado
+    - trace_id         # ID del workflow (ADR-006)
+    - extra_metadata   # JSONB — reservado para el orquestador (null por defecto)
+
+# -----------------------------------------------------------------------------
+# Modo Dev (SIGMA_VARIANT=Dev)
+# -----------------------------------------------------------------------------
+dev_mode:
+  # Número de textos sintéticos generados en modo Dev.
+  synthetic_rows: 500
+
+  # Idioma de los textos sintéticos generados.
+  synthetic_language: "es"
+
+  # Distribución sintética de sentimiento esperada en Dev
+  # (solo referencial, el modelo clasifica libremente).
+  synthetic_hint_distribution:
+    positive: 0.50
+    negative: 0.30
+    neutral: 0.20
+
+# -----------------------------------------------------------------------------
+# Presupuesto (ADR-004)
+# -----------------------------------------------------------------------------
+budget:
+  # Costo real del skill: $0.00 (modelo local, sin API externa).
+  max_usd: 0.00
+  estimated_cost_per_1k_texts: 0.00
+
+# -----------------------------------------------------------------------------
+# Trazabilidad Langfuse
+# -----------------------------------------------------------------------------
+langfuse:
+  trace_prefix: "sentiment-analyzer"
+  # batch_complete se emite cada N batches para no saturar Langfuse.
+  batch_event_frequency: 10
+  events:
+    - sentiment-analyzer.start
+    - sentiment-analyzer.batch_complete
+    - sentiment-analyzer.success
+    - sentiment-analyzer.error

@@ -1,0 +1,1 @@
+"""Paquete raíz de los Skills en SIGMA-hito1"""

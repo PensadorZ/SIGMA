@@ -1,0 +1,40 @@
+# =============================================================================
+# defaults.yaml — Skill 0002: data-cleanser
+# SIGMA v1.5 · Eco MultiAgentes 4 Skills 2 (fusión v2.0.0)
+# Autor: Prof. Marx Agustín García Delgado
+# =============================================================================
+
+skill:
+  id: "0002"
+  name: "data-cleanser"
+  version: "2.0.0"
+  sigma_variant: "${SIGMA_VARIANT:-Full}"
+
+# -----------------------------------------------------------------------------
+# Deduplicación
+# -----------------------------------------------------------------------------
+deduplication:
+  # Umbral de advertencia: si el % de duplicados exactos supera esto,
+  # se agrega warning 'high_duplicate_rate' (posible problema en la fuente).
+  high_duplicate_rate_threshold: 0.20
+
+# -----------------------------------------------------------------------------
+# Filas rechazadas (cleaned_rejected)
+# -----------------------------------------------------------------------------
+rejection:
+  # Criterio de rechazo actual: row_id nulo o vacío.
+  # Ver SKILL.md sección 1 para la adaptación respecto a la versión original.
+  reason_missing_row_id: "missing_row_id"
+
+# -----------------------------------------------------------------------------
+# Modo Dev
+# -----------------------------------------------------------------------------
+dev_mode:
+  synthetic_rows: 500
+
+langfuse:
+  trace_prefix: "data-cleanser"
+  events:
+    - data-cleanser.start
+    - data-cleanser.success
+    - data-cleanser.error
