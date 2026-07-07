@@ -28,9 +28,9 @@ import time
 
 import pytest
 
-from core.pipeline_state import initial_state
-from skills._common import ServiceCheckResult
-from skills._loader import load_skill
+from sigma.core.pipeline_state import initial_state
+from sigma.skills._common import ServiceCheckResult
+from sigma.skills._loader import load_skill
 
 skill = load_skill("0000-system-health-check")
 

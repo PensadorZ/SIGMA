@@ -17,7 +17,7 @@ import orchestrator  # noqa: F401
 print("orchestrator.py importado.")
 print()
 
-from skills._common import check_postgres, check_redis
+from sigma.skills._common import check_postgres, check_redis
 
 print("=== PostgreSQL: timeout=3s (igual que el pipeline real) ===")
 r1 = check_postgres(timeout_seconds=3.0)

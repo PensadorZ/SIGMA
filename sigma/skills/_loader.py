@@ -6,7 +6,7 @@
 # Resuelve el problema de que las carpetas de skill tienen guion y prefijo
 # numérico (ej. '0008-sentiment-analyzer'), lo cual NO es un identificador
 # Python válido y por lo tanto no se puede importar con la sintaxis normal
-# de paquetes: `from skills.0008-sentiment-analyzer.skill import run` es
+# de paquetes: `from sigma.skills.0008-sentiment-analyzer.skill import run` es
 # un SyntaxError, no un ImportError — no hay forma de arreglarlo con imports
 # relativos ni con __init__.py.
 #
@@ -17,7 +17,7 @@
 # Hito 1.
 #
 # Uso:
-#   from skills._loader import load_skill
+#   from sigma.skills._loader import load_skill
 #   mod_0008 = load_skill("0008-sentiment-analyzer")
 #   resultado = mod_0008.run(state)
 # =============================================================================

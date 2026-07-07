@@ -24,8 +24,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from core.pipeline_state import PipelineState, SkillResult
-from skills._common import (
+from sigma.core.pipeline_state import PipelineState, SkillResult
+from sigma.skills._common import (
     get_pg_connection,
     is_dev_mode,
     load_defaults,

@@ -24,7 +24,7 @@ import orchestrator  # noqa: F401 -- esto carga TODO: langgraph, langfuse, los 6
 print(f"orchestrator.py importado completamente en {time.monotonic() - t0:.2f}s")
 print()
 
-from skills._common import check_postgres, check_redis
+from sigma.skills._common import check_postgres, check_redis
 
 print("=== PostgreSQL: primera llamada ===")
 t0 = time.monotonic()

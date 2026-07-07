@@ -37,7 +37,7 @@ from typing import Any, Callable, Iterator, Optional
 
 import yaml
 
-from core.pipeline_state import PipelineState, SkillResult
+from sigma.core.pipeline_state import PipelineState, SkillResult
 
 log = logging.getLogger("sigma.skills")
 

@@ -18,7 +18,7 @@ import pandas as pd
 import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
 
-from skills._loader import load_skill
+from sigma.skills._loader import load_skill
 
 skill = load_skill("0011-viz-reporter")
 

@@ -42,8 +42,8 @@ from typing import Callable, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from core.pipeline_state import PipelineState, SkillResult
-from skills._common import (
+from sigma.core.pipeline_state import PipelineState, SkillResult
+from sigma.skills._common import (
     ServiceCheckResult,
     check_postgres,
     check_redis,

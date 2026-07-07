@@ -26,8 +26,8 @@ orchestrator._emit_langfuse = _no_op_langfuse
 print("_emit_langfuse neutralizada -- Langfuse NUNCA se llama en esta prueba.")
 print()
 
-from core.pipeline_state import initial_state
-from core.checkpointer import get_checkpointer
+from sigma.core.pipeline_state import initial_state
+from sigma.core.checkpointer import get_checkpointer
 
 state = initial_state(
     trace_id="test-sin-langfuse",

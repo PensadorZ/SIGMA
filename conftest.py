@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent
-SKILLS_DIR = ROOT / "skills"
+SKILLS_DIR = ROOT / "sigma" / "skills"
 
 
 def _register_skill_module(skill_dir_name: str, alias: str) -> None:
@@ -64,3 +64,45 @@ _register_skill_module("0000-system-health-check", "skills_0000_system_health_ch
 _register_skill_module("0001-data-ingestion", "skills_0001_data_ingestion")
 _register_skill_module("0002-data-cleanser", "skills_0002_data_cleanser")
 _register_skill_module("0003-data-preprocessor", "skills_0003_data_preprocessor")
+
+import pytest
+from sigma.core.pipeline_state import initial_state
+
+
+@pytest.fixture
+def ctx():
+    """
+    Diccionario compartido entre los pasos Given/When/Then de un mismo
+    escenario pytest-bdd. Cada test recibe uno nuevo y vacío (pytest
+    crea una instancia fresca por test, así que no hay fuga de estado
+    entre escenarios distintos).
+    """
+    return {}
+
+
+@pytest.fixture
+def make_state():
+    """
+    Factory que construye un PipelineState de prueba usando la función
+    real initial_state() de sigma.core.pipeline_state, con valores por
+    defecto razonables. Los tests solo sobreescriben lo que necesitan
+    (ej. trace_id, sigma_variant); todo lo demás queda en su valor
+    inicial estándar del pipeline real.
+    """
+    def _make_state(
+        trace_id: str = "test-trace-0001",
+        pipeline_run_id: str = "test-run-0001",
+        sigma_variant: str = "Full",
+        data_path: str = "test-data.csv",
+        **overrides,
+    ):
+        state = initial_state(
+            trace_id=trace_id,
+            pipeline_run_id=pipeline_run_id,
+            sigma_variant=sigma_variant,
+            data_path=data_path,
+        )
+        state.update(overrides)
+        return state
+
+    return _make_state

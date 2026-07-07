@@ -22,7 +22,7 @@ import time
 
 import pytest
 
-from skills._common import (
+from sigma.skills._common import (
     ServiceCheckResult,
     check_postgres,
     check_redis,
@@ -121,7 +121,9 @@ def test_check_redis_servicio_caido_no_lanza_excepcion(monkeypatch):
     assert result.service == "redis"
 
 
-def test_check_redis_exitoso():
+def test_check_redis_exitoso(monkeypatch):
+    monkeypatch.delenv("REDIS_URL", raising=False)
+
     class _FakeRedisOK:
         def __init__(self, *args, **kwargs):
             pass
@@ -130,8 +132,6 @@ def test_check_redis_exitoso():
 
     result = check_redis(timeout_seconds=1, _connector=_FakeRedisOK)
     assert result.available is True
-
-
 # ---------------------------------------------------------------------------
 # get_pg_connection — retry con backoff SOLO para errores transitorios
 # ---------------------------------------------------------------------------

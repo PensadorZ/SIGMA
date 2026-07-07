@@ -26,7 +26,7 @@ def _no_op_langfuse(trace_id, event_name, fields):
 orchestrator._emit_langfuse = _no_op_langfuse
 print("_emit_langfuse neutralizada.")
 
-from core.pipeline_state import initial_state
+from sigma.core.pipeline_state import initial_state
 
 state = initial_state(
     trace_id="test-sin-checkpointer",

@@ -20,7 +20,7 @@ load_dotenv()
 
 # Carga el módulo directamente desde su ruta de archivo (el nombre de carpeta
 # con guion no es un identificador Python válido para import normal).
-SKILL_PATH = Path("skills/0011-viz-reporter/skill.py")
+SKILL_PATH = Path("sigma/skills/0011-viz-reporter/skill.py")
 spec = importlib.util.spec_from_file_location("skill_0011", SKILL_PATH)
 skill_0011 = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(skill_0011)

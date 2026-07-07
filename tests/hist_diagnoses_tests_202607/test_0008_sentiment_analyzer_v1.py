@@ -16,7 +16,7 @@ import pandas as pd
 import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
 
-from skills import s0008_sentiment_analyzer as skill
+from sigma.skills import s0008_sentiment_analyzer as skill
 
 scenarios("test_skill.feature")
 
