@@ -123,12 +123,18 @@ services:
       TELEMETRY_ENABLED: "false"
       NEXTAUTH_URL: http://localhost:3001
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/public/health"]
+      # FIX 2026-07-06 (definitivo): el servidor de Langfuse en esta imagen
+      # no escucha en loopback (127.0.0.1 ni ::1) dentro del contenedor,
+      # solo en la IP de red que Docker le asigna. Confirmado con
+      # `docker exec sigma_langfuse wget ... http://<ip_contenedor>:3000/...`
+      # → "remote file exists", mientras que 127.0.0.1 daba "Connection
+      # refused". Se resuelve la IP dinámicamente con `hostname -i` en vez
+      # de hardcodearla, porque cambiaría en cada recreación del contenedor.
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://$(hostname -i):3000/api/public/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
-
 # =============================================================================
 # OPCIÓN A: Langfuse v2 (NO necesita ClickHouse)
 # =============================================================================

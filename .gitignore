@@ -42,3 +42,13 @@ logs/*.log
 
 # Credenciales de Zulip
 zuliprc
+
+# Checkpoints de LangGraph (SqliteSaver) - estado interno del pipeline,
+# se regenera localmente al correr el pipeline, nunca se sube
+sigma_checkpoints.sqlite
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Datos crudos - no se versionan datasets originales 
+data/raw/

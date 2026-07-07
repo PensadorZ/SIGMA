@@ -2,8 +2,15 @@
 # skills/0001-data-ingestion/skill.py
 # SIGMA v1.5 · Eco MultiAgentes 3 Skills 1 / Eco MultiAgentes 4 Skills 2
 # Autor: Prof. Marx Agustín García Delgado
-# Versión: 2.0.0
+# Versión: 2.0.1
 # =============================================================================
+# NOTA v2.0.1 — Corrección de bug: valores NaN de pandas en columnas
+# opcionales (ej. selected_text vacío) rompían la serialización JSON al
+# escribir en PostgreSQL, porque json.dumps() convierte NaN al token
+# literal `NaN`, que no es JSON válido según RFC 8259. Se sanea cada
+# valor con pd.isna() antes de construir el diccionario metadata,
+# convirtiendo NaN/NaT a None (que sí serializa como `null`).
+#
 # NOTA v2.0.0 — FUSIÓN (Opción C, política por defecto confirmada en
 # Eco MultiAgentes 4 Skills 2). Incorpora sobre la base ya verificada:
 #   - checksum_sha256 del archivo fuente (integridad, trazabilidad)
@@ -183,8 +190,14 @@ def run(state: PipelineState) -> SkillResult:
             try:
                 with conn.cursor() as cur:
                     for _, row in df.iterrows():
+                        # FIX v2.0.1: sanear NaN/NaT de pandas antes de
+                        # serializar a JSON. json.dumps() convierte NaN al
+                        # token literal `NaN`, inválido según RFC 8259.
+                        # pd.isna() detecta NaN, NaT y None de forma
+                        # uniforme; se normaliza todo a None → `null`.
                         metadata = {
-                            k: v for k, v in row.items()
+                            k: (None if pd.isna(v) else v)
+                            for k, v in row.items()
                             if k not in ("row_id", "text")
                         }
                         cur.execute(

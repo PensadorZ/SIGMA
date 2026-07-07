@@ -1,6 +1,6 @@
 # =============================================================================
 # requirements.txt — SIGMA Hito 1
-# SIGMA v1.6 · Eco MultiAgentes 4 Skills 2
+# SIGMA v1.6 · Eco MultiAgentes Sigma 2 (Hito 1)
 # Autor: Prof. Marx Agustín García Delgado
 # =============================================================================
 # Uso:
@@ -23,6 +23,9 @@
 # con RoBERTa (cardiffnlp/twitter-roberta-base-sentiment-latest) y
 # persistencia real del dashboard en MinIO. No es solo "pasa las
 # pruebas unitarias" — corrió el sistema real completo.
+#
+# English version:
+#
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -49,6 +52,10 @@ langgraph-checkpoint-sqlite
 # Si alguna vez actualizas esto a langfuse>=3, DEBES también subir el
 # servidor Docker a v3.22+, lo cual reintroduce ClickHouse. Esa es una
 # decisión de arquitectura completa, no un simple `pip install --upgrade`.
+
+
+
+
 langfuse<3
 
 # -----------------------------------------------------------------------------

@@ -2,35 +2,59 @@
 # webhook_receiver.py — Servidor FastAPI para HITL vía Zulip
 # SIGMA v1.6 · Eco MultiAgentes 4 Skills 2
 # Autor: Prof. Marx Agustín García Delgado
-# Versión: 2.0.0
-#
+# ---------------------------------------------------------------------------
+# changelog:
+#   - version: 2.2.0
+#     fecha: 2026-07-06
+#     cambio: >
+#       Detección de saludos casuales ampliada a español e inglés
+#       (hola/hi, buenos días/good morning, etc.). El bot responde en el
+#       mismo idioma detectado, con la fecha del día, sin intentar
+#       interpretar el saludo como respuesta HITL.
+#     razon: >
+#       Antes de este cambio, cualquier saludo caía en "respuesta ambigua"
+#       sin ninguna reacción visible — daba la impresión de que el bot no
+#       funcionaba. Se limitó deliberadamente a un diccionario de palabras
+#       clave (sin LLM) para no sobre-construir en el cierre del Hito 1;
+#       la conversación libre bilingüe vía Ollama queda pospuesta para el
+#       Director del Hito 2, donde pertenece ese tipo de razonamiento abierto.
+#   - version: 2.1.1
+#     fecha: 2026-07-06
+#     cambio: >
+#       Validación de remitente cambiada de sender_email a sender_id.
+#     razon: >
+#       Zulip entrega sender_email enmascarado (formato userNNNNN@dominio)
+#       según su configuración de privacidad (email_address_visibility),
+#       sin relación con el correo real configurado en ZULIP_EMAIL.
+#       sender_id es estable y siempre visible en el payload — confirmado
+#       con una prueba real de DM en esta sesión.
+#   - version: 2.1.0
+#     fecha: 2026-07-06
+#     cambio: >
+#       Validación cambiada de stream/topic a type="private" (DM).
+#     razon: >
+#       Documentación oficial de Zulip confirma que un Outgoing webhook
+#       solo se dispara por @-mención o mensaje directo — nunca por un
+#       mensaje plano en un stream/topic, aunque el bot esté suscrito.
+#   - version: 2.0.0
+#     fecha: 2026-07-05
+#     cambio: >
+#       Reemplazo de clave global de Redis por get_waiting_trace_id()
+#       aislado por corrida, vía core.checkpointer.
+#     razon: >
+#       La v1.0.0 usaba una clave "hitl_decision" global sin trace_id,
+#       nunca limpiada tras leerla — una corrida futura podía leer la
+#       aprobación de una corrida anterior sin haber esperado nada.
+# ---------------------------------------------------------------------------
 # Canal: Sigma-Approval
-# Topic: hitl-approvals (ZULIP_TOPIC_HITL)
-# Bot: sigma-hito1-bot
-# =============================================================================
-# NOTA v2.0.0 — CORRECCIÓN de un bug real de la versión 1.0.0 original:
-#
-# La v1.0.0 escribía `r.set("hitl_decision", "approve")` con una clave
-# GLOBAL, sin trace_id, y nunca la borraba tras leerla. Eso significa
-# que si alguna vez quedaba un "approve" de una corrida anterior, la
-# SIGUIENTE corrida lo leería de inmediato como respuesta a su propia
-# pregunta, sin haber esperado nada — y el problema se repetía en cada
-# corrida futura una vez que ocurría una vez.
-#
-# Esta versión usa core.checkpointer.resume_pipeline(), que:
-#   1. Identifica QUÉ trace_id está esperando (Redis, puntero aislado,
-#      limpiado automáticamente tras reanudar — ver core/checkpointer.py).
-#   2. Reanuda ESE grafo específico vía interrupt() + Command(resume=...),
-#      no un flag global que cualquier corrida podría leer por error.
-#
-# parse_hitl_response() se sigue usando exactamente igual que en v1.0.0
-# — eso ya estaba bien, no se tocó esa parte.
+# Bot: chismosito2 (Outgoing webhook)
 # =============================================================================
 
 from __future__ import annotations
 
 import logging
 import os
+from datetime import datetime
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -60,6 +84,52 @@ app = FastAPI(title="SIGMA HITL Webhook")
 
 
 # ---------------------------------------------------------------------------
+# Saludos casuales bilingües — respuesta amistosa, sin tocar el pipeline
+# ---------------------------------------------------------------------------
+
+GREETING_KEYWORDS_ES = [
+    "hola", "cómo estás", "como estas", "cómo esta", "como esta",
+    "buen dia", "buen día", "buenos dias", "buenos días",
+    "buenas tardes", "buenas noches", "buenas",
+    "epa", "saludos", "que tal", "qué tal",
+]
+
+GREETING_KEYWORDS_EN = [
+    "hi", "hello", "hey", "how are you", "how's it going",
+    "good morning", "good afternoon", "good evening",
+    "greetings", "what's up", "whats up",
+]
+
+MESES_ES = {
+    1: "enero", 2: "febrero", 3: "marzo", 4: "abril",
+    5: "mayo", 6: "junio", 7: "julio", 8: "agosto",
+    9: "septiembre", 10: "octubre", 11: "noviembre", 12: "diciembre",
+}
+
+
+def _es_saludo(text: str) -> bool:
+    normalized = text.strip().lower()
+    return any(kw in normalized for kw in GREETING_KEYWORDS_ES + GREETING_KEYWORDS_EN)
+
+
+def _es_ingles(text: str) -> bool:
+    normalized = text.strip().lower()
+    return any(kw in normalized for kw in GREETING_KEYWORDS_EN)
+
+
+def _fecha_hoy_es() -> str:
+    now = datetime.now()
+    return f"{now.day} de {MESES_ES[now.month]} de {now.year}"
+
+
+def _respuesta_saludo(en_ingles: bool) -> str:
+    fecha = _fecha_hoy_es()
+    if en_ingles:
+        return f"Hi, how's it going? Today is a beautiful day, {fecha}."
+    return f"Hola, ¿Qué tal? Hoy es un lindo día {fecha}."
+
+
+# ---------------------------------------------------------------------------
 # Endpoint principal: Zulip Outgoing Webhook (POST)
 # ---------------------------------------------------------------------------
 @app.post("/webhook/zulip")
@@ -70,18 +140,36 @@ async def handle_zulip_webhook(request: Request):
     try:
         message = payload.get("message", {})
         content = message.get("content", "").strip()
-        stream = message.get("stream", "").strip()
+        msg_type = message.get("type", "")
 
-        # Nombres reconciliados con el .env real — ver reconciliación
-        # de nombres de variable hecha en esta sesión.
-        expected_stream = os.getenv("ZULIP_STREAM", "Sigma-Approval")
+        # ── Validación de canal: solo DM dispara el flujo HITL ──────────
+        if msg_type != "private":
+            logger.warning(
+                f"Mensaje ignorado: type='{msg_type}' (se esperaba 'private', "
+                f"la respuesta HITL debe llegar por DM al bot)"
+            )
+            return JSONResponse({"status": "ignored", "reason": "not_a_direct_message"})
 
-        if stream != expected_stream:
-            logger.warning(f"Stream ignorado: '{stream}' (esperaba '{expected_stream}')")
-            return JSONResponse({"status": "ignored", "reason": "stream mismatch"})
+        # ── Validación de remitente: solo el operador autorizado ────────
+        # sender_id es estable; sender_email puede llegar enmascarado
+        # por Zulip según su configuración de privacidad.
+        sender_id = message.get("sender_id")
+        expected_owner_id = os.getenv("ZULIP_OWNER_USER_ID", "")
 
-        # Interpretamos la respuesta en lenguaje natural — sin cambios
-        # respecto a v1.0.0, esta parte ya funcionaba correctamente.
+        if expected_owner_id and str(sender_id) != str(expected_owner_id):
+            logger.warning(
+                f"DM ignorado: sender_id '{sender_id}' no coincide con "
+                f"ZULIP_OWNER_USER_ID configurado ('{expected_owner_id}')."
+            )
+            return JSONResponse({"status": "ignored", "reason": "sender_not_authorized"})
+
+        # ── Saludo casual (ES/EN): respuesta amistosa, no se toca el pipeline
+        if _es_saludo(content):
+            respuesta = _respuesta_saludo(en_ingles=_es_ingles(content))
+            logger.info(f"[saludo] '{content}' → respondiendo saludo")
+            return JSONResponse({"content": respuesta})
+
+        # ── Interpretación como respuesta HITL (sí/no) ──────────────────
         decision = parse_hitl_response(content)
 
         if decision is None:
@@ -105,8 +193,6 @@ async def handle_zulip_webhook(request: Request):
         result = resume_pipeline(build_graph_fn, trace_id, decision)
 
         if "__interrupt__" in result:
-            # El pipeline tenía más de una pausa HITL — quedó pausado
-            # de nuevo en el siguiente punto. No es un error.
             logger.info(f"Pipeline {trace_id} reanudado, pero pausado de nuevo (otra pausa HITL).")
             return JSONResponse({
                 "status": "resumed_but_paused_again",
@@ -129,8 +215,8 @@ async def handle_zulip_webhook(request: Request):
 
 
 # ---------------------------------------------------------------------------
-# Healthcheck (para Expose o Ngrok)
+# Healthcheck (para ngrok o servicios de monitoreo)
 # ---------------------------------------------------------------------------
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "sigma-hito1-webhook", "version": "2.0.0"}
+    return {"status": "ok", "service": "sigma-hito1-webhook", "version": "2.2.0"}

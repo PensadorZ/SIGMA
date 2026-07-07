@@ -1,8 +1,22 @@
 # =============================================================================
 # hooks/zulip_notifier.py — Notificaciones HITL vía Zulip
-# SIGMA v1.5 · Eco MultiAgentes 3 Skills 1
+# SIGMA v1.6 · Eco MultiAgentes 3 Skills 1
 # Autor: Prof. Marx Agustín García Delgado
-# Versión: 1.0.0
+# ---------------------------------------------------------------------------
+# changelog:
+#   - version: 1.1.0
+#     fecha: 2026-07-06
+#     cambio: >
+#       request_hitl_confirmation() ahora instruye responder por mensaje
+#       directo (DM) al bot, no en el topic del stream.
+#     razon: >
+#       La documentación oficial de Zulip confirma que un Outgoing webhook
+#       solo se dispara con @-mención al bot o mensaje directo — nunca con
+#       un mensaje plano en el topic, aunque el bot esté suscrito al stream.
+#       Responder en el topic simplemente no activaba nada.
+#   - version: 1.0.0
+#     fecha: 2026-07-04
+#     cambio: "Versión inicial. parse_hitl_response() con soporte ES/EN."
 # =============================================================================
 # Implementa las dos funciones que el orquestador importa:
 #   notify_hitl()        → alerta puntual durante el pipeline
@@ -26,17 +40,12 @@ load_dotenv()
 
 log = logging.getLogger("sigma.zulip_notifier")
 
-# ---------------------------------------------------------------------------
-# Configuración — exclusivamente desde variables de entorno (ADR-010)
-# ---------------------------------------------------------------------------
-
 ZULIP_BOT_EMAIL: Optional[str] = os.getenv("ZULIP_BOT_EMAIL")
 ZULIP_BOT_API_KEY: Optional[str] = os.getenv("ZULIP_BOT_API_KEY")
-ZULIP_SITE: Optional[str] = os.getenv("ZULIP_SITE")          # ej. marx-mundial2026.zulipchat.com
+ZULIP_SITE: Optional[str] = os.getenv("ZULIP_SITE")
 ZULIP_STREAM: str = os.getenv("ZULIP_STREAM", "sigma-hito1")
 ZULIP_TOPIC: str = os.getenv("ZULIP_TOPIC", "pipeline-events")
 
-# Si alguna variable falta, el notificador opera en modo silencioso.
 _ZULIP_ENABLED: bool = all([ZULIP_BOT_EMAIL, ZULIP_BOT_API_KEY, ZULIP_SITE])
 
 if not _ZULIP_ENABLED:
@@ -45,10 +54,6 @@ if not _ZULIP_ENABLED:
         "no configuradas. Las notificaciones se registrarán solo en log local."
     )
 
-
-# ---------------------------------------------------------------------------
-# Función interna de envío
-# ---------------------------------------------------------------------------
 
 def _send(message: str) -> bool:
     """
@@ -95,10 +100,6 @@ def _send(message: str) -> bool:
         log.warning("[zulip] Error inesperado: %s. Pipeline continúa.", exc)
         return False
 
-
-# ---------------------------------------------------------------------------
-# API pública — importada por orchestrator.py
-# ---------------------------------------------------------------------------
 
 def notify_hitl(message: str) -> None:
     """
@@ -160,38 +161,21 @@ def notify_pipeline_end(
     _send(message)
 
 
-# ---------------------------------------------------------------------------
-# Parsing de respuestas humanas en lenguaje natural — HITL
-# ---------------------------------------------------------------------------
-# Sustituye el esquema previo de +1/-1, que era propenso a error bajo
-# presión (nadie recuerda códigos numéricos a las 2am cuando el pipeline
-# interrumpe con una alerta). Este parser normaliza cualquier respuesta
-# humana razonable en español o inglés, incluyendo variantes coloquiales.
-# +1/-1 se mantienen como alias válidos por retrocompatibilidad, pero ya
-# no son la forma primaria de responder.
-# ---------------------------------------------------------------------------
-
 AFFIRMATIVE_RESPONSES: frozenset[str] = frozenset({
-    # Español formal e informal
     "sí", "si", "s", "sip", "seee", "seeee", "seeeee",
     "claro", "dale", "va", "vale", "ok", "okay", "oki",
     "confirmo", "confirmado", "aprobado", "apruebo", "adelante",
     "correcto", "afirmativo", "procede", "procedo",
-    # Inglés
     "yes", "y", "yeah", "yep", "yup", "sure", "confirm",
     "confirmed", "approved", "go", "go ahead", "proceed",
-    # Retrocompatibilidad con el esquema numérico previo
     "+1", "1",
 })
 
 NEGATIVE_RESPONSES: frozenset[str] = frozenset({
-    # Español
     "no", "n", "nop", "nel", "negativo", "para", "detente",
     "cancela", "cancelar", "aborta", "abortar", "denegado",
     "rechazo", "rechazado", "incorrecto",
-    # Inglés
     "nope", "cancel", "stop", "abort", "denied", "reject", "rejected",
-    # Retrocompatibilidad con el esquema numérico previo
     "-1",
 })
 
@@ -209,16 +193,8 @@ def parse_hitl_response(text: str) -> Optional[bool]:
         False si la respuesta es negativa (no, nop, -1, etc.)
         None  si la respuesta es ambigua o no reconocida — el orquestador
               debe re-preguntar en lugar de asumir una interpretación.
-
-    Ejemplos:
-        parse_hitl_response("seeee")   → True
-        parse_hitl_response("nop")     → False
-        parse_hitl_response("+1")      → True
-        parse_hitl_response("tal vez") → None  (re-pregunta)
     """
     normalized = text.strip().lower()
-
-    # Quita signos de puntuación finales comunes (¡!, ¿?, ., ,)
     normalized = normalized.strip("¡!¿?., ")
 
     if normalized in AFFIRMATIVE_RESPONSES:
@@ -235,9 +211,10 @@ def parse_hitl_response(text: str) -> Optional[bool]:
 
 def request_hitl_confirmation(question: str) -> None:
     """
-    Envía una pregunta HITL a Zulip que espera respuesta en lenguaje
-    natural. El orquestador debe hacer polling o webhook para capturar
-    la respuesta y pasarla por parse_hitl_response() antes de continuar.
+    Envía una pregunta HITL a Zulip que espera respuesta por mensaje
+    directo (DM) al bot — no en el topic del stream. El webhook_receiver.py
+    detecta el DM entrante y lo pasa por parse_hitl_response() antes de
+    reanudar el pipeline.
 
     Args:
         question: Pregunta a formular. Se recomienda ser explícito sobre
@@ -247,8 +224,8 @@ def request_hitl_confirmation(question: str) -> None:
     message = (
         f"❓ **SIGMA — Confirmación requerida**\n"
         f"{question}\n\n"
-        f"_Responde con lenguaje natural: sí/no, yeah/nop, sip/nel, "
-        f"o +1/-1 si prefieres el esquema anterior._"
+        f"_Responde por **mensaje directo (DM)** a este bot — no aquí en el topic._\n"
+        f"_Lenguaje natural: sí/no, yeah/nop, sip/nel, o +1/-1 si prefieres el esquema anterior._"
     )
-    log.info("[hitl] Solicitando confirmación HITL vía Zulip")
+    log.info("[hitl] Solicitando confirmación HITL vía Zulip (respuesta esperada por DM)")
     _send(message)

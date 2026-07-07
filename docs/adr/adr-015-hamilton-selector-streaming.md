@@ -16,8 +16,8 @@ nombre-archivo: adr-015-hamilton-selector-streaming.md
 
 ## Resumen ejecutivo de cambios v1.1
 
-Migración del ADR (originado en la conversación "Eco MultiAgentes 4
-Skills 2") al formato canónico aprobado del repositorio de ADRs: frontmatter
+Migración del ADR (originado en la conversación "Eco MultiAgentes 3 (Hito 1)") 
+al formato canónico aprobado del repositorio de ADRs: frontmatter
 YAML completo, figuras y tablas numeradas con título, e histórico de
 versiones con literales. Se conserva la corrección de la auditoría previa:
 la relación que citaba erróneamente "ADR-011: LangGraph" fue eliminada — el
@@ -128,7 +128,7 @@ PostgreSQL / MinIO / Langfuse               │
 
 | Riesgo | Mitigación |
 |---|---|
-| Kafka añade complejidad operacional significativa | Hito 3 no comienza hasta que Hito 1 y 2 estén validados; Kafka solo en variantes con recursos suficientes |
+| Kafka añade complejidad operacional significativa | Hito 3 no comienza hasta que Hito 1 y 2 estén validados; Kafka solo disponible en SIGMA-ME/HE (recursos de cómputo y presupuesto suficientes para el broker) |
 | Los pesos de la matriz pueden sesgarse hacia contenido viral | Los pesos son configurables y auditables en `policies.yaml`; revisión periódica contra ADR-007 D1 |
 | Baja confianza del clasificador en streaming | K ⊆ X aplica igual que en batch: `UNCLEAR` para baja confianza, sin excepciones (ADR-008) |
 

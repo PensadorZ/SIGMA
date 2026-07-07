@@ -104,14 +104,21 @@ PASO 7 — Versionado y promoción (ADR-012)
 | **Green Team** | Validador funcional | Ejecuta pruebas Gherkin/LTL, revisa código con `code-reviewer`, gestiona Vibe Diff |
 | **Blue Team** | Registrador | Actualiza el AgBOM cuando el skill se promociona a producción |
 
-### Tab. 2 — Comportamiento por variante
+### Tab. 2 — Comportamiento por variante de costo
 
 | Variante | Estado | Nivel de aprobación |
 |---|---|---|
-| **SIGMA Full** | Activo | Impacto LOW sin aprobación humana; MEDIUM/HIGH con aprobación |
-| **SIGMA Lite** | Activo | Mismos niveles que Full |
-| **SIGMA Dev** | **Desactivado** | No aplica; evita proliferación de skills no validados en depuración |
-| **SIGMA Runtime** | Activo | **Cualquier generación** requiere aprobación del operador, independientemente del nivel |
+| **SIGMA-FE** | Activo | Impacto LOW sin aprobación humana; MEDIUM/HIGH con aprobación |
+| **SIGMA-LE** | Activo | Mismos niveles que FE |
+| **SIGMA-ME** | Activo | Mismos niveles que FE |
+| **SIGMA-HE** | Activo | Mismos niveles que FE |
+
+**Submodos transversales** (aplican a cualquiera de las cuatro variantes de costo):
+
+| Submodo | Estado | Nivel de aprobación |
+|---|---|---|
+| **Dev** | **Desactivado** | No aplica; evita proliferación de skills no validados en depuración |
+| **Runtime** | Activo | **Cualquier generación** requiere aprobación del operador, independientemente del nivel |
 
 ---
 

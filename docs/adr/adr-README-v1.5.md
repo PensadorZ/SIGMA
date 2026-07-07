@@ -1,7 +1,7 @@
 ---
 id: ADR-README
 titulo: Índice de Architecture Decision Records — SIGMA
-version: 1.5
+version: 1.6
 estado: Activo
 fecha-revision: 2026-07
 aprobado-por: Prof. Marx A. García Delgado
@@ -82,26 +82,31 @@ de los que dependen de él.
 
 ---
 
-## Tab. 3 — Aplicabilidad por variante
+### Tab. 3 — Aplicabilidad por variante y submodo
 
-| ADR | SIGMA Full | SIGMA Lite | SIGMA Dev | SIGMA Runtime |
-|---|---|---|---|---|
-| ADR-001 | Obligatorio | Obligatorio | Parcial | Obligatorio |
-| ADR-002 | Obligatorio | Obligatorio | Parcial | Obligatorio |
-| ADR-003 | Obligatorio | Obligatorio | No aplica | Obligatorio |
-| ADR-004 | Obligatorio | Obligatorio | Relajado | Obligatorio |
-| ADR-005 | Obligatorio | Obligatorio | Solo estructural | Obligatorio |
-| ADR-006 | Obligatorio | Obligatorio | Obligatorio | Obligatorio |
-| ADR-007 | Obligatorio | Obligatorio | Parcial | Obligatorio |
-| ADR-008 | Obligatorio | Obligatorio | Obligatorio | Obligatorio |
-| ADR-009 | Obligatorio | Obligatorio | Obligatorio | Obligatorio |
-| ADR-010 | Obligatorio | Obligatorio | Obligatorio | Obligatorio |
-| ADR-011 | Autoalojado | Cloud | Opcional | Obligatorio |
-| ADR-012 | Obligatorio | Obligatorio | Parcial | Obligatorio |
-| ADR-013 | Obligatorio | Obligatorio | Opcional | Obligatorio |
-| ADR-014 | Obligatorio | Obligatorio | No aplica | Con aprobación |
-| ADR-015 | Hito 3 | Hito 3 | No aplica | Hito 3 con aprobación |
-| ADR-016 | Hito 2 | Hito 2 | Parcial | Hito 2 |
+| ADR | Variantes de costo (FE/LE/ME/HE) | Dev (transversal) | Runtime (transversal) |
+|---|---|---|---|
+| ADR-001 | Obligatorio | Parcial | Obligatorio |
+| ADR-002 | Obligatorio | Parcial | Obligatorio |
+| ADR-003 | Obligatorio | No aplica | Obligatorio |
+| ADR-004 | Obligatorio | Relajado | Obligatorio |
+| ADR-005 | Obligatorio | Solo estructural | Obligatorio |
+| ADR-006 | Obligatorio | Obligatorio | Obligatorio |
+| ADR-007 | Obligatorio | Parcial | Obligatorio |
+| ADR-008 | Obligatorio | Obligatorio | Obligatorio |
+| ADR-009 | Obligatorio | Obligatorio | Obligatorio |
+| ADR-010 | Obligatorio | Obligatorio | Obligatorio |
+| ADR-011 | Ver nota (*) | Opcional | Obligatorio (autoalojado) |
+| ADR-012 | Obligatorio | Parcial | Obligatorio |
+| ADR-013 | Obligatorio | Opcional | Obligatorio |
+| ADR-014 | Obligatorio | No aplica | Con aprobación |
+| ADR-015 | Hito 3 | No aplica | Hito 3 con aprobación |
+| ADR-016 | Hito 2 | Parcial | Hito 2 |
+
+(*) ADR-011 es la única excepción real: varía según el costo del stack, no
+según la gobernanza. SIGMA-FE y SIGMA-LE usan Langfuse autoalojado;
+SIGMA-ME y SIGMA-HE usan Langfuse Cloud / LangSmith (ver SIGMA_v1.7.md,
+tabla comparativa por costo).
 
 ---
 
@@ -138,3 +143,8 @@ ADR obliga a revisar todos los ADRs que lo referencian como dependencia directa.
 - **ADR-016 → v1.0 (nuevo):** salda la deuda documental del Hito 2
   (jerarquía de tres orquestadores) y registra formalmente LangGraph como
   motor de orquestación — la decisión que ningún ADR anterior respaldaba.
+- **Tab. 3 → v1.6:** Colapsada de cuatro columnas (Full/Lite/Dev/Runtime) a
+  una sola columna de variantes de costo (FE/LE/ME/HE) + dos columnas
+  transversales (Dev/Runtime), reflejando la renominación aplicada en
+  SIGMA_v1.7.md. Única excepción real es ADR-011 (Langfuse autoalojado vs.
+  Cloud), documentada en nota al pie. 
