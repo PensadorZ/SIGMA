@@ -52,3 +52,6 @@ sigma_checkpoints.sqlite
 
 # Datos crudos - no se versionan datasets originales 
 data/raw/
+
+# Carpeta personal de aprendizaje - nunca se sube al repo publico
+Learning/
