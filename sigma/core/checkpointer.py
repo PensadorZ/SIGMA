@@ -60,7 +60,7 @@ def mark_waiting(trace_id: str) -> None:
     esperando decisión humana. Llamado por orchestrator.py justo antes
     de que el grafo se pause en node_hitl_wait.
     """
-    from skills._common import get_redis_connection
+    from sigma.skills._common import get_redis_connection
 
     try:
         r = get_redis_connection()
@@ -80,7 +80,7 @@ def get_waiting_trace_id() -> str | None:
     webhook_receiver.py al recibir una respuesta de Zulip, para saber
     qué corrida reanudar.
     """
-    from skills._common import get_redis_connection
+    from sigma.skills._common import get_redis_connection
 
     r = get_redis_connection()
     value = r.get(REDIS_HITL_WAITING_KEY)
@@ -95,7 +95,7 @@ def clear_waiting(trace_id: str) -> None:
     encontrado en la propuesta original, donde la clave nunca se
     borraba y contaminaba la siguiente corrida.
     """
-    from skills._common import get_redis_connection
+    from sigma.skills._common import get_redis_connection
 
     r = get_redis_connection()
     current = get_waiting_trace_id()
