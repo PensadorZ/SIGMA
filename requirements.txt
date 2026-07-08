@@ -1,7 +1,6 @@
 # =============================================================================
 # requirements.txt — SIGMA Hito 1
-# SIGMA v1.6 · Eco MultiAgentes Sigma 2 (Hito 1)
-# Autor: Prof. Marx Agustín García Delgado
+# SIGMA v1.7 · Autor: Prof. Marx Agustín García Delgado
 # =============================================================================
 # Uso:
 #   pip install -r requirements.txt
@@ -13,7 +12,7 @@
 # código fuente ni repetir el proceso de descubrimiento que a nosotros
 # nos tomó varias horas (ver especialmente la nota sobre langfuse abajo).
 #
-# ✅ VERIFICADO CON CORRIDA REAL COMPLETA — 5 de julio de 2026:
+# VERIFICADO CON CORRIDA REAL COMPLETA — 5 de julio de 2026:
 # este conjunto exacto de versiones (instalado limpio, con
 # PYTHONNOUSERSITE=1 activo para evitar contaminación con paquetes
 # globales por usuario) ejecutó el pipeline completo del Hito 1 de
@@ -24,22 +23,44 @@
 # persistencia real del dashboard en MinIO. No es solo "pasa las
 # pruebas unitarias" — corrió el sistema real completo.
 #
-# English version:
+# -----------------------------------------------------------------------------
+# English version
+# -----------------------------------------------------------------------------
+# Usage:
+#   pip install -r requirements.txt
 #
+# This file consolidates ALL packages found necessary throughout the
+# build and debugging of Hito 1 (Milestone 1) — including ones installed
+# at different points across different work sessions, so a new developer
+# doesn't have to reconstruct the list by reading source code or repeat
+# the discovery process that took us several hours (see especially the
+# note on langfuse below).
+#
+# VERIFIED WITH A FULL REAL RUN — July 5, 2026:
+# this exact set of versions (clean install, with PYTHONNOUSERSITE=1
+# active to avoid contamination from user-global packages) ran the
+# complete Hito 1 pipeline end to end against real Docker infrastructure
+# and the real Tirendaz dataset: all 6 skills (0000→0001→0002→0003→0008→0011)
+# completed successfully, including real sentiment classification with
+# RoBERTa (cardiffnlp/twitter-roberta-base-sentiment-latest) and real
+# dashboard persistence to MinIO. This isn't just "unit tests pass" — it
+# ran the actual complete system.
 # =============================================================================
 
 # -----------------------------------------------------------------------------
 # Orquestación del pipeline (LangGraph + HITL con interrupt/checkpointer)
+# Pipeline orchestration (LangGraph + HITL via interrupt/checkpointer)
 # -----------------------------------------------------------------------------
 langgraph
 langgraph-checkpoint-sqlite
 
 # -----------------------------------------------------------------------------
 # Observabilidad — Langfuse
+# Observability — Langfuse
 # -----------------------------------------------------------------------------
 # ADVERTENCIA CRÍTICA — NO QUITAR ESTA RESTRICCIÓN DE VERSIÓN:
 #
-# El stack Full de SIGMA usa Langfuse v2 autoalojado (ghcr.io/langfuse/
+# El stack SIGMA-FE usa Langfuse v2 autoalojado (ghcr.io/langfuse/
 # langfuse:2 en docker-compose.yml) — deliberado, para evitar la
 # dependencia de ClickHouse que exige la v3+.
 #
@@ -52,14 +73,30 @@ langgraph-checkpoint-sqlite
 # Si alguna vez actualizas esto a langfuse>=3, DEBES también subir el
 # servidor Docker a v3.22+, lo cual reintroduce ClickHouse. Esa es una
 # decisión de arquitectura completa, no un simple `pip install --upgrade`.
-
-
-
+#
+# ---
+#
+# CRITICAL WARNING — DO NOT REMOVE THIS VERSION CONSTRAINT:
+#
+# The SIGMA-FE stack uses self-hosted Langfuse v2 (ghcr.io/langfuse/
+# langfuse:2 in docker-compose.yml) — deliberately, to avoid the
+# ClickHouse dependency required by v3+.
+#
+# langfuse>=3 (the Python SDK) uses a native OpenTelemetry API that
+# sends traces to the /api/public/otel route — THAT ROUTE ONLY EXISTS
+# ON LANGFUSE SERVERS >=3.22.0. Against a real v2 server, that route
+# returns 404 (confirmed with a direct curl — not a config or port
+# issue, the route simply doesn't exist in v2).
+#
+# If you ever upgrade this to langfuse>=3, you MUST also upgrade the
+# Docker server to v3.22+, which reintroduces ClickHouse. That's a full
+# architecture decision, not a simple `pip install --upgrade`.
 
 langfuse<3
 
 # -----------------------------------------------------------------------------
 # Infraestructura — clientes de PostgreSQL, Redis, MinIO
+# Infrastructure — PostgreSQL, Redis, MinIO clients
 # -----------------------------------------------------------------------------
 psycopg2-binary
 redis
@@ -67,6 +104,7 @@ minio
 
 # -----------------------------------------------------------------------------
 # Datos y ML — preprocesado (0003), sentimiento (0008)
+# Data and ML — preprocessing (0003), sentiment (0008)
 # -----------------------------------------------------------------------------
 pandas
 numpy
@@ -74,10 +112,11 @@ scikit-learn
 imbalanced-learn
 transformers
 torch
-langdetect==1.0.9      # Detección real de idioma en 0003 (reemplaza heurística de palabras clave)
+langdetect==1.0.9      # Deteccion real de idioma en 0003 / Real language detection in 0003
 
 # -----------------------------------------------------------------------------
 # Visualización — dashboards (0011)
+# Visualization — dashboards (0011)
 # -----------------------------------------------------------------------------
 plotly
 matplotlib
@@ -85,6 +124,7 @@ duckdb
 
 # -----------------------------------------------------------------------------
 # Contratos de datos y configuración
+# Data contracts and configuration
 # -----------------------------------------------------------------------------
 pydantic
 pyyaml
@@ -97,6 +137,7 @@ python-dotenv
 
 # -----------------------------------------------------------------------------
 # Servidor del webhook HITL (webhook_receiver.py)
+# HITL webhook server (webhook_receiver.py)
 # -----------------------------------------------------------------------------
 fastapi
 uvicorn
@@ -106,3 +147,9 @@ uvicorn
 # -----------------------------------------------------------------------------
 pytest
 pytest-bdd
+
+# -----------------------------------------------------------------------------
+# Descarga de datasets — Kaggle API (token formato KGAT, no kaggle.json clásico)
+# Dataset download — Kaggle API (KGAT token format, not classic kaggle.json)
+# -----------------------------------------------------------------------------
+kaggle
