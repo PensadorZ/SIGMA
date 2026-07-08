@@ -60,8 +60,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 
-from hooks.zulip_notifier import parse_hitl_response
-from core.checkpointer import get_waiting_trace_id, resume_pipeline
+from sigma.hooks.zulip_notifier import parse_hitl_response
+from sigma.core.checkpointer import get_waiting_trace_id, resume_pipeline
 
 
 def _get_build_graph_fn():

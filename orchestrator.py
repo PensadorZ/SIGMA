@@ -46,7 +46,7 @@ from langgraph.types import interrupt
 # Checkpointer compartido para HITL real (interrupt + SQLite) — permite
 # que orchestrator.py (quien pausa) y webhook_receiver.py (quien reanuda,
 # proceso completamente separado) coordinen sin memoria compartida en RAM.
-from core.checkpointer import mark_waiting
+from sigma.core.checkpointer import mark_waiting
 
 # Langfuse
 from langfuse import Langfuse
@@ -60,7 +60,7 @@ from langfuse import Langfuse
 # Python válidos y no se pueden importar con sintaxis de puntos. Se cargan
 # dinámicamente por ruta de archivo — ver skills/_loader.py para el detalle
 # técnico completo.
-from skills._loader import load_skill
+from sigma.skills._loader import load_skill
 
 run_0000 = load_skill("0000-system-health-check").run
 run_0001 = load_skill("0001-data-ingestion").run
@@ -70,7 +70,7 @@ run_0008 = load_skill("0008-sentiment-analyzer").run
 run_0011 = load_skill("0011-viz-reporter").run
 
 # Estado y circuit breaker
-from core.pipeline_state import (
+from sigma.core.pipeline_state import (
     BACKOFF_BASE_SECONDS,
     MAX_RETRIES,
     NON_RECOVERABLE_ERRORS,
@@ -81,7 +81,7 @@ from core.pipeline_state import (
 )
 
 # Notificaciones HITL (Zulip)
-from hooks.zulip_notifier import notify_hitl, notify_pipeline_end
+from sigma.hooks.zulip_notifier import notify_hitl, notify_pipeline_end
 
 # Credenciales — ADR-010: nunca hardcodeadas, siempre desde .env
 from dotenv import load_dotenv
@@ -343,7 +343,7 @@ def node_hitl_wait(state: PipelineState) -> PipelineState:
     # trace_id reanudar en cuanto llegue la respuesta de Zulip.
     mark_waiting(state["trace_id"])
 
-    from hooks.zulip_notifier import request_hitl_confirmation
+    from sigma.hooks.zulip_notifier import request_hitl_confirmation
     request_hitl_confirmation(question)
 
     state["hitl_question"] = question
@@ -639,7 +639,7 @@ def main() -> None:
     # que node_hitl_wait pueda pausar de verdad (interrupt()) y sobrevivir
     # a que este proceso termine. webhook_receiver.py reanuda después
     # como proceso separado, usando el mismo archivo sigma_checkpoints.sqlite.
-    from core.checkpointer import get_checkpointer
+    from sigma.core.checkpointer import get_checkpointer
 
     with get_checkpointer() as checkpointer:
         compiled_graph = build_graph(checkpointer=checkpointer)
