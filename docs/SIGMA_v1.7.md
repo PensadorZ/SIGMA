@@ -2,132 +2,31 @@
 
 > **SIGMA no es una respuesta. Es el sistema que aprende a responder.**
 
-SIGMA es un ecosistema de agentes autónomos para analizar, diseñar, calcular
-y decidir. Múltiples agentes especializados colaboran bajo una arquitectura
-de orquestación central triangular — el patrón Director/Engineer de tres
-orquestadores (ver ADR-016) — para abordar proyectos en los dominios de
-Ingeniería de Datos, Data Science, Análisis de Datos, Ingeniería General,
-Física, Matemática y Axiometría.
+SIGMA es un ecosistema de agentes autónomos para analizar, diseñar,
+calcular y decidir en diversas situaciones y niveles de complejidad,
+desde el análisis exploratorio de un dataset hasta el diseño completo
+de un pipeline de producción. Cada decisión que el sistema toma queda
+respaldada por gobernanza explícita — memoria epistémica, contención de
+alucinaciones (`K ⊆ X`) y trazabilidad completa — en vez de convención
+tácita.
 
+Múltiples agentes especializados colaboran bajo una arquitectura de
+orquestación central triangular — la propuesta viene con la designación
+de tres orquestadores, Director/Auditor/Engineer (ver ADR-016), que
+trabajan juntos para abordar proyectos en los dominios de Ingeniería de
+Datos, Data Science, Análisis de Datos, Ingeniería General, Física,
+Matemática y Axiometría.
 ---
 
-## Registro de cambios (Changelog)
-
-> Los cambios de versiones anteriores se registran con literal + número de versión.
-> Los cambios de esta versión usan solo literal.
-
-### Cambios en v1.1 (base inicial)
-
-- **a.1.1** Definición del ecosistema SIGMA con arquitectura multiagente.
-- **b.1.1** Primer conjunto de ADRs (001–009).
-- **c.1.1** Catálogo inicial de 7 skills sin numeración canónica.
-
-### Cambios en v1.2
-
-- **a.1.2** Adición de ADR-010 (secretos), ADR-011 (Langfuse), ADR-012
-  (versionado), ADR-013 (auditoría de trayectoria).
-- **b.1.2** Renombrado de AGENTS.md a AGENTS_CREATOR.md.
-- **c.1.2** Definición formal de las cuatro variantes: Full, Lite, Dev, Runtime.
-
-### Cambios en v1.3
-
-- **a.1.3** Incorporación de ADR-014 (generación dinámica de skills).
-- **b.1.3** Ampliación del catálogo a 13 skills con numeración canónica 0000–0012.
-- **c.1.3** Documentación en profundidad del Policy Server y el Approval Endpoint.
-- **d.1.3** Incorporación de Alpha Envolve como herramienta de validación externa opcional.
-
-### Cambios en v1.3.1
-
-- **a.1.3.1** Sección "Ciclicidad vs. Aciclicidad en la orquestación" — cómo SIGMA
-  mantiene un DAG principal acíclico permitiendo subgrafos cíclicos controlados.
-
-### Cambios en v1.4 (versión intermedia, integrada en v1.5)
-
-- **a.1.4** Resolución de la inconsistencia Full/ZERO: "Full" permanece como nombre
-  técnico canónico; "SIGMA ZERO" es el nombre comercial de la variante Full.
-- **b.1.4** Corrección de la sintaxis de placeholders de [[VAR]] a ${VAR} en todos
-  los pipelines y documentos.
-- **c.1.4** Catálogo ampliado a 15 skills (adición de 0013, 0014, 0015).
-- **d.1.4** Carpetas globales renombradas con sufijo _SIGMA para evitar colisiones
-  con carpetas locales de cada skill.
-
-### Cambios en v1.5
-
-- **a** Incorporación de 3 nuevos skills: skill-discovery (0013), stride-modeling
-  (0014), pipeline-inspector (0015) — ver catálogo completo.
-- **b** Chat interactivo: endpoint chat_api.py + skill pipeline-inspector para
-  consultas en lenguaje natural durante la ejecución del pipeline.
-- **c** Hook de pre-commit con auto-fix (SIGMA_AUTO_FIX=true) y reglas Semgrep
-  personalizadas en hooks_SIGMA/semgrep_rules/concurrency.yaml.
-- **d** Comando sigma init para inicializar proyectos desde cero.
-- **e** SKILL_STANDARD.md como estándar abierto de empaquetamiento de skills,
-  compatible con Google Antigravity y Vercel npx skills.
-- **f** Corrección de la descripción de SIGMA Lite: la diferencia con Full es el
-  stack (servicios de pago), no el nivel de seguridad.
-- **g** Adición del Roadmap de implementación con dos hitos concretos.
-- **h** Absorción de las recomendaciones del curso de Vibecoding de Google (5 días):
-  las equivalencias con Cloud Trace, Cloud Logging y BigQuery se documentan como
-  opciones de SIGMA Lite; no modifican SIGMA Full.
-- **i** Corrección de estado del catálogo tras la auditoría y fusión completa de
-  "Eco MultiAgentes 4 Skills 2": los 6 skills del Hito 1 (0000, 0001, 0002, 0003,
-  0008, 0011) quedan confirmados como Entregados. Versiones actualizadas a las
-  reales post-fusión (0000-0003 → v2.0.0; 0008, 0011 → v1.1.0, no v1.2.0 como
-  indicaba este documento antes de la corrección). Verificado contra 65/65
-  pruebas automatizadas pasando.
-
-### Cambios en v1.6
-
-- **a** Se agrega `ADR-015` (Arquitectura de Análisis en Tiempo Real con
-  Hamilton Selector) a la tabla de ADRs — faltaba por completo en v1.5.
-- **b** Se agregan 4 filas a "Compatibilidad y estándares": Redis (caché y
-  colas, base del Hito 3 de streaming), MinIO (almacenamiento de objetos),
-  Zulip (notificaciones HITL/ejecución, distinto de observabilidad de trazas),
-  LangGraph (motor real del orquestador).
-- **c** Se retiran "Vercel npx skills" y "Google Antigravity" de la misma
-  tabla, tras debate documentado (5 argumentos por postura): la compatibilidad
-  dependía de `SKILL_STANDARD.md`, que nunca se completó (permanece
-  `🔄 En revisión`); el origen de esa fila fue una decisión de posicionamiento
-  externo confirmada en auditoría previa, no una necesidad técnica. Ver
-  `docs/reportes/` para el debate completo.
-- **d** `SKILL_STANDARD.md` se mantiene en `🔄 En revisión` sin fecha de
-  cierre — se determina que, tal como estaba planteado (atado a compatibilidad
-  con plataformas de terceros), no aporta valor de mantenimiento; `ADR-009`
-  ya cubre con rigor el formato de empaquetado de skills. Su única
-  justificación futura sería una publicación externa independiente de la
-  gobernanza interna de ADRs, no confirmada todavía.
-- **e** Conteo de ADRs actualizado de 14 a 15 en las tablas de estructura del
-  repositorio y documentación adicional.
-
-### Cambios en v1.7
-
-- **a** Se agrega `ADR-016` (Orquestación Jerárquica de Tres Orquestadores,
-  patrón Director/Engineer) a la tabla de ADRs. Formaliza LangGraph como
-  motor de orquestación — decisión que ningún ADR anterior respaldaba.
-  Conteo total actualizado de 15 a 16 ADRs en todo el documento.
-- **b** Corrección del Roadmap del Hito 1: el texto decía "Skills necesarios
-  (5)" cuando la tabla inmediata lista 6 skills. Corregido a "(6)".
-- **c** `TROUBLESHOOTING.md` incorporado a "Documentos canónicos" y
-  "Documentación adicional" — registro consolidado de incidentes reales con
-  su diagnóstico y solución.
-- **d** El skill `0005` se renombra de `hamilton-selector` a
-  `framework-selector`. Motivo: colisión de nombre con el "Hamilton Selector"
-  del ADR-015 (skill `0016`, Hito 3), que designa un componente
-  completamente distinto (priorización de mensajes en streaming, no
-  selección de framework ML/DL). El nombre "Hamilton Selector" queda
-  reservado en exclusiva para el `0016`, donde tiene respaldo matemático
-  formal en ADR-015.
-- **e** **Renombramiento completo del eje de variantes.** Se reemplaza la
-  notación Full/Lite por cuatro escalones de costo explícitos:
-  **SIGMA-FE** (Full Engineer, costo $0), **SIGMA-LE** (Low-Cost Engineer),
-  **SIGMA-ME** (Medium-Cost Engineer), **SIGMA-HE** (High-Cost Engineer).
-  Los submodos **Dev** y **Runtime** se mantienen, ahora como transversales:
-  aplican a cualquiera de las cuatro variantes de costo (ej. "SIGMA-FE en
-  modo Dev"), en vez de ser variantes paralelas independientes. El nombre
-  comercial "SIGMA ZERO" queda absorbido por SIGMA-FE, que ya comunica
-  costo cero en su propia descripción. Tablas "Disponibilidad por variante"
-  y "Requisitos previos por variante" actualizadas a la nueva notación.
-  *Nota: esta renominación queda pendiente de aplicar en ADR-014 y
-  adr-README-v1.5.md — se abordará en la próxima ronda de revisión de ADRs.*
+> **Nota de alcance:** este documento describe la visión arquitectónica
+> completa de SIGMA — incluyendo componentes planeados que todavía no
+> existen en el código (CLI empaquetado, carpetas `pipelines/`, `specs/`,
+> `agent_cards/`, `hooks_SIGMA/`, `endpoints/`, y los documentos
+> `PROJECT_FRAMEWORK.md`/`SKILL_STANDARD.md`). El estado real y verificado
+> hoy es el **Hito 1**: 6 skills corriendo de extremo a extremo vía
+> `orchestrator.py`, con 65/65 pruebas automatizadas pasando. Ver
+> "Estado del ecosistema" y "Roadmap de implementación" para la distinción
+> exacta entre lo construido y lo planeado.
 
 ---
 
@@ -235,7 +134,7 @@ trazar hasta un dato observado. Ninguna alucinación puede filtrarse al output.
 | Ingeniería General | Simulación de sistemas, optimización de procesos, automatización |
 | Física | Modelado numérico, simulaciones, análisis de series temporales |
 | Matemática | Sistemas axiomáticos, cálculo simbólico, prueba asistida de teoremas |
-| Axiometría | Análisis de consistencia argumentativa, Zeugmatización epistemológica |
+| Axiometría | Análisis de: Mapa Axiológico, Razonamiento Axiológico Interagentes |
 
 ---
 
@@ -671,6 +570,15 @@ avanzadas, seguridad STRIDE, chat interactivo y generación dinámica de skills.
 **Entregable:** SIGMA en plena capacidad de producción, documentado, testeado
 y desplegable en un solo comando.
 
+**Migración del esquema de variantes a nivel de código.** `orchestrator.py`,
+  `sigma/core/pipeline_state.py` y `sigma/skills/_common.py` (más el tipo
+  duplicado en `sigma/skills/0000-system-health-check/skill.py`) todavía
+  usan el esquema `Full/Lite/Dev/Runtime` como valores paralelos de
+  `--variant`. La migración al esquema vigente (`SIGMA-FE/LE/ME/HE` +
+  submodo `Dev`/`Runtime` separado) toca 10 archivos, incluyendo los 6
+  step definitions de test que simulan modo Dev vía Gherkin — se pospone
+  a Hito 2 para no arriesgar la suite de 65 tests verificada del Hito 1.
+
 ---
 
 ## Inicio rápido
@@ -761,6 +669,126 @@ curl -X POST http://localhost:8080/chat/ask \
 | INSTALL.md | Guía detallada de instalación paso a paso |
 | TROUBLESHOOTING.md | Incidentes reales encontrados y su solución exacta |
 | docs/adr/ | 16 Architecture Decision Records |
+
+---
+
+## Registro de cambios (Changelog)
+
+> Los cambios de versiones anteriores se registran con literal + número de versión.
+> Los cambios de esta versión usan solo literal.
+
+### Cambios en v1.1 (base inicial)
+
+- **a.1.1** Definición del ecosistema SIGMA con arquitectura multiagente.
+- **b.1.1** Primer conjunto de ADRs (001–009).
+- **c.1.1** Catálogo inicial de 7 skills sin numeración canónica.
+
+### Cambios en v1.2
+
+- **a.1.2** Adición de ADR-010 (secretos), ADR-011 (Langfuse), ADR-012
+  (versionado), ADR-013 (auditoría de trayectoria).
+- **b.1.2** Renombrado de AGENTS.md a AGENTS_CREATOR.md.
+- **c.1.2** Definición formal de las cuatro variantes: Full, Lite, Dev, Runtime.
+
+### Cambios en v1.3
+
+- **a.1.3** Incorporación de ADR-014 (generación dinámica de skills).
+- **b.1.3** Ampliación del catálogo a 13 skills con numeración canónica 0000–0012.
+- **c.1.3** Documentación en profundidad del Policy Server y el Approval Endpoint.
+- **d.1.3** Incorporación de Alpha Envolve como herramienta de validación externa opcional.
+
+### Cambios en v1.3.1
+
+- **a.1.3.1** Sección "Ciclicidad vs. Aciclicidad en la orquestación" — cómo SIGMA
+  mantiene un DAG principal acíclico permitiendo subgrafos cíclicos controlados.
+
+### Cambios en v1.4 (versión intermedia, integrada en v1.5)
+
+- **a.1.4** Resolución de la inconsistencia Full/ZERO: "Full" permanece como nombre
+  técnico canónico; "SIGMA ZERO" es el nombre comercial de la variante Full.
+- **b.1.4** Corrección de la sintaxis de placeholders de [[VAR]] a ${VAR} en todos
+  los pipelines y documentos.
+- **c.1.4** Catálogo ampliado a 15 skills (adición de 0013, 0014, 0015).
+- **d.1.4** Carpetas globales renombradas con sufijo _SIGMA para evitar colisiones
+  con carpetas locales de cada skill.
+
+### Cambios en v1.5
+
+- **a** Incorporación de 3 nuevos skills: skill-discovery (0013), stride-modeling
+  (0014), pipeline-inspector (0015) — ver catálogo completo.
+- **b** Chat interactivo: endpoint chat_api.py + skill pipeline-inspector para
+  consultas en lenguaje natural durante la ejecución del pipeline.
+- **c** Hook de pre-commit con auto-fix (SIGMA_AUTO_FIX=true) y reglas Semgrep
+  personalizadas en hooks_SIGMA/semgrep_rules/concurrency.yaml.
+- **d** Comando sigma init para inicializar proyectos desde cero.
+- **e** SKILL_STANDARD.md como estándar abierto de empaquetamiento de skills,
+  compatible con Google Antigravity y Vercel npx skills.
+- **f** Corrección de la descripción de SIGMA Lite: la diferencia con Full es el
+  stack (servicios de pago), no el nivel de seguridad.
+- **g** Adición del Roadmap de implementación con dos hitos concretos.
+- **h** Absorción de las recomendaciones del curso de Vibecoding de Google (5 días):
+  las equivalencias con Cloud Trace, Cloud Logging y BigQuery se documentan como
+  opciones de SIGMA Lite; no modifican SIGMA Full.
+- **i** Corrección de estado del catálogo tras la auditoría y fusión completa de
+  "Eco MultiAgentes 4 Skills 2": los 6 skills del Hito 1 (0000, 0001, 0002, 0003,
+  0008, 0011) quedan confirmados como Entregados. Versiones actualizadas a las
+  reales post-fusión (0000-0003 → v2.0.0; 0008, 0011 → v1.1.0, no v1.2.0 como
+  indicaba este documento antes de la corrección). Verificado contra 65/65
+  pruebas automatizadas pasando.
+
+### Cambios en v1.6
+
+- **a** Se agrega `ADR-015` (Arquitectura de Análisis en Tiempo Real con
+  Hamilton Selector) a la tabla de ADRs — faltaba por completo en v1.5.
+- **b** Se agregan 4 filas a "Compatibilidad y estándares": Redis (caché y
+  colas, base del Hito 3 de streaming), MinIO (almacenamiento de objetos),
+  Zulip (notificaciones HITL/ejecución, distinto de observabilidad de trazas),
+  LangGraph (motor real del orquestador).
+- **c** Se retiran "Vercel npx skills" y "Google Antigravity" de la misma
+  tabla, tras debate documentado (5 argumentos por postura): la compatibilidad
+  dependía de `SKILL_STANDARD.md`, que nunca se completó (permanece
+  `🔄 En revisión`); el origen de esa fila fue una decisión de posicionamiento
+  externo confirmada en auditoría previa, no una necesidad técnica. Ver
+  `docs/reportes/` para el debate completo.
+- **d** `SKILL_STANDARD.md` se mantiene en `🔄 En revisión` sin fecha de
+  cierre — se determina que, tal como estaba planteado (atado a compatibilidad
+  con plataformas de terceros), no aporta valor de mantenimiento; `ADR-009`
+  ya cubre con rigor el formato de empaquetado de skills. Su única
+  justificación futura sería una publicación externa independiente de la
+  gobernanza interna de ADRs, no confirmada todavía.
+- **e** Conteo de ADRs actualizado de 14 a 15 en las tablas de estructura del
+  repositorio y documentación adicional.
+
+### Cambios en v1.7
+
+- **a** Se agrega `ADR-016` (Orquestación Jerárquica de Tres Orquestadores,
+  patrón Director/Engineer) a la tabla de ADRs. Formaliza LangGraph como
+  motor de orquestación — decisión que ningún ADR anterior respaldaba.
+  Conteo total actualizado de 15 a 16 ADRs en todo el documento.
+- **b** Corrección del Roadmap del Hito 1: el texto decía "Skills necesarios
+  (5)" cuando la tabla inmediata lista 6 skills. Corregido a "(6)".
+- **c** `TROUBLESHOOTING.md` incorporado a "Documentos canónicos" y
+  "Documentación adicional" — registro consolidado de incidentes reales con
+  su diagnóstico y solución.
+- **d** El skill `0005` se renombra de `hamilton-selector` a
+  `framework-selector`. Motivo: colisión de nombre con el "Hamilton Selector"
+  del ADR-015 (skill `0016`, Hito 3), que designa un componente
+  completamente distinto (priorización de mensajes en streaming, no
+  selección de framework ML/DL). El nombre "Hamilton Selector" queda
+  reservado en exclusiva para el `0016`, donde tiene respaldo matemático
+  formal en ADR-015.
+- **e** **Renombramiento completo del eje de variantes.** Se reemplaza la
+  notación Full/Lite por cuatro escalones de costo explícitos:
+  **SIGMA-FE** (Full Engineer, costo $0), **SIGMA-LE** (Low-Cost Engineer),
+  **SIGMA-ME** (Medium-Cost Engineer), **SIGMA-HE** (High-Cost Engineer).
+  Los submodos **Dev** y **Runtime** se mantienen, ahora como transversales:
+  aplican a cualquiera de las cuatro variantes de costo (ej. "SIGMA-FE en
+  modo Dev"), en vez de ser variantes paralelas independientes. El nombre
+  comercial "SIGMA ZERO" queda absorbido por SIGMA-FE, que ya comunica
+  costo cero en su propia descripción. Tablas "Disponibilidad por variante"
+  y "Requisitos previos por variante" actualizadas a la nueva notación.
+  *Nota: esta renominación queda pendiente de aplicar en ADR-014 y
+  adr-README-v1.5.md — se abordará en la próxima ronda de revisión de ADRs.*
 
 ---
 

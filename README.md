@@ -13,10 +13,12 @@ desde su arquitectura hasta la resolución real de incidentes en
 producción.
 
 Múltiples agentes especializados colaboran bajo una arquitectura de
-orquestación central triangular — el patrón Director/Engineer de tres
+orquestación central triangular — Director/Auditor/Engineer, tres
 orquestadores (ver ADR-016) — para abordar proyectos en Ingeniería de
 Datos, Data Science, Análisis de Datos, Ingeniería General, Física,
 Matemática y Axiometría.
+
+---
 
 ## Por qué SIGMA es distinto
 
@@ -44,34 +46,45 @@ Cada variante puede además operar en submodo **Dev** (depuración) o
 **Runtime** (producción con datos reales). Detalle completo en
 [SIGMA_v1.7.md](SIGMA_v1.7.md).
 
+## Requisitos previos
+
+- Docker y Docker Compose
+- Python 3.12+
+- [Ngrok](https://ngrok.com/download) — expone el webhook HITL local a
+  Zulip durante el desarrollo (no es un paquete Python, se instala y
+  ejecuta por separado)
+- Cuenta de Kaggle con token API (formato KGAT) — para descargar el
+  dataset de entrenamiento
+
 ## Empezar
 
 ```bash
-sigma init mi-proyecto
-cd mi-proyecto
+git clone https://github.com/PensadorZ/SIGMA.git
+cd SIGMA
 cp .env.example .env
+# Editar .env con tus valores reales
 docker compose up -d
-python -m sigma run pipelines/analisis_opinion_twitter.yaml
+python orchestrator.py --variant Dev --data-path ./data/tirendaz.csv
 ```
 
-Guía completa, paso a paso, en [INSTALL.md](INSTALL.md).
+Guía completa, paso a paso, en [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.md).
 
 ## Documentación
 
 | Documento | Qué encontrarás ahí |
 |---|---|
-| [SIGMA_v1.7.md](SIGMA_v1.7.md) | Plan Maestro completo — arquitectura, variantes, roadmap |
-| [AGENTS_CREATOR.md](AGENTS_CREATOR.md) | Acta fundacional — contrato de todos los agentes |
+| [SIGMA_v1.7.md](docs/SIGMA_v1.7.md) | Plan Maestro completo — arquitectura, variantes, roadmap |
+| [AGENTS_CREATOR.md](docs/AGENTS_CREATOR.md) | Acta fundacional — contrato de todos los agentes |
 | [docs/adr/](docs/adr/) | 16 Architecture Decision Records |
-| [PIPELINES.md](PIPELINES.md) | Cómo crear y ejecutar pipelines propios |
-| [INSTALL.md](INSTALL.md) | Instalación detallada, de cero a pipeline corriendo |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Incidentes reales encontrados y su solución exacta |
+| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Incidentes reales encontrados y su solución exacta |
 
 ## Estado del proyecto
 
 Hito 1 completado: pipeline de 6 skills corriendo de extremo a extremo
-contra datos reales, con 65/65 pruebas automatizadas pasando. Hito 2 en
-diseño: orquestación jerárquica de tres niveles (Director/Engineer).
+contra datos reales, con 65/65 pruebas automatizadas pasando. Para este caso,
+la salida del Pipeline está en MinIO; Es decir, el producto terminado debe buscarse
+dentro del dashboard que ha sido generado en MinIO. 
+El Hito 2 está en diseño: y tendrá mejoras para la entrega de las Ouputs, la orquestación de las distintatas tareas dentro del Pipeline será jerárquica de tres niveles (Director/Engineer/Auditor).
 
 ## Licencia
 
