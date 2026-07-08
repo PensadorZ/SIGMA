@@ -30,7 +30,7 @@ changelog:
 
 # Verificación final de artefactos — SIGMA Hito 1
 
-**SIGMA v1.5 · Eco MultiAgentes 4 Skills 2**
+**SIGMA v1.5 · Eco MultiAgentes Sigma 2 (Hito 1)**
 Autor: Prof. Marx Agustín García Delgado · Fecha: Julio 2026
 
 Este documento cruza dos cosas distintas: qué debería existir en
