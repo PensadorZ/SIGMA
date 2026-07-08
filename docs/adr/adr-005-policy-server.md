@@ -1,16 +1,24 @@
 ---
 id: ADR-005
 titulo: Policy Server Híbrido — Estructural y Semántico
-version: 1.3
+version: 1.4
 estado: Aceptado
 fecha-original: 2026-06
 fecha-revision: 2026-06
-supersede: ADR-005 v1.2
+supersede: ADR-005 v1.3
 referencias-minimas: ADR-003, ADR-004, ADR-006, ADR-010, ADR-011
 aprobado-por: Prof. Marx A. García Delgado
 ---
 
 # ADR-005: Policy Server Híbrido — Estructural y Semántico
+
+## Resumen ejecutivo de cambios v1.4
+
+Se amplía la sección de Contexto para explicar primero qué es el Policy
+Server y por qué existe como punto de intercepción previo — antes de que
+un Vibe Diff (ADR-004) se genere o el Red/Blue/Green Team (ADR-003)
+necesite intervenir — antes de entrar al detalle de las dos capas de
+restricción.
 
 ## Resumen ejecutivo de cambios v1.3
 
@@ -21,11 +29,26 @@ asignación de modelos LLM por variante. Se incorpora el histórico de versiones
 
 ## Contexto
 
-Cada herramienta que SIGMA puede ejecutar representa un vector de riesgo. Las
-restricciones necesarias son de dos tipos: estructurales (reglas deterministas)
-y semánticas (requieren comprensión del contexto). Una capa única no puede
-resolver ambas eficientemente.
+El Policy Server es el mecanismo que decide, en el instante mismo en que
+un agente solicita usar una herramienta, si esa llamada puede proceder
+— antes de que siquiera llegue a generarse un Vibe Diff (ADR-004) o a
+que el Red/Blue/Green Team (ADR-003) necesite intervenir. Sin esta capa
+de intercepción en el punto de entrada, cualquier control posterior
+(aprobación humana, auditoría, equipos de seguridad) actuaría siempre
+después del hecho, nunca antes de que la acción ya se haya ejecutado.
 
+Cada herramienta que SIGMA puede ejecutar representa un vector de riesgo
+real. Las restricciones necesarias para gobernar ese riesgo son de dos
+tipos fundamentalmente distintos: estructurales (reglas deterministas,
+verificables sin ambigüedad — ¿este rol puede tocar este recurso en este
+entorno?) y semánticas (requieren comprensión real del contexto — ¿esta
+llamada, aunque técnicamente permitida, expone datos sensibles o se
+desvía de la intención original del usuario?). Una capa única no puede
+resolver ambas eficientemente: forzar todo por evaluación semántica
+sería prohibitivo en latencia y coste para el 95% de llamadas que son
+triviales de resolver por regla, mientras que resolver todo por regla
+estructural dejaría pasar violaciones que solo un juicio contextual
+puede detectar.
 ---
 
 ## Decisión

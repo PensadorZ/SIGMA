@@ -1,16 +1,28 @@
 ---
 id: ADR-001
 titulo: Memoria Epistémica basada en Feature Store y Grafo de Suposiciones
-version: 1.4
+version: 1.5
 estado: Aceptado
 fecha-original: 2026-06
 fecha-revision: 2026-06
-supersede: ADR-001 v1.3
+supersede: ADR-001 v1.4
 referencias-minimas: ADR-002, ADR-008, ADR-011
 aprobado-por: Prof. Marx A. García Delgado
 ---
 
 # ADR-001: Memoria Epistémica basada en Feature Store y Grafo de Suposiciones
+
+## Resumen ejecutivo de cambios v1.5
+
+Se amplía la sección de Contexto para establecer explícitamente qué es
+la Memoria Epistémica y por qué existe dentro del ecosistema SIGMA más
+amplio — específicamente, su rol como fundamento operativo de la
+Contención Epistémica K ⊆ X (ADR-008) — en vez de abrir directamente
+con el problema técnico. Se agrega una nota conceptual de referencia
+cruzada al final de la sección Decisión, señalando un marco teórico
+personal paralelo que el autor está desarrollando (Zeugmatización
+epistemológica), explícitamente delimitado como fuera del alcance
+técnico de este ADR.
 
 ## Resumen ejecutivo de cambios v1.4
 
@@ -23,19 +35,39 @@ compatibilidad.
 
 ## Contexto
 
-SIGMA debe mantener conocimiento acumulado entre ejecuciones para evitar
-reaprender lo ya conocido, detectar cambios de comportamiento en entidades
-y razonar sobre creencias que pueden ser refutadas sin borrar el historial.
-Existen dos categorías de conocimiento fundamentalmente distintas:
+## Contexto
+
+SIGMA opera como un ecosistema de agentes autónomos que ejecutan pipelines
+de forma recurrente, no como un script de una sola corrida. Para que esa
+autonomía sea confiable —y no una fuente de alucinación acumulada— el
+sistema necesita memoria persistente entre ejecuciones: sin ella, cada
+corrida reaprendería desde cero lo que ya se sabe sobre una entidad, y no
+habría forma de detectar cuándo su comportamiento cambia con el tiempo.
+Esta memoria es, además, el fundamento operativo de la Contención
+Epistémica K ⊆ X (ADR-008): un agente solo puede afirmar lo que puede
+trazar hasta un dato observado, y eso exige un mecanismo real donde ese
+dato observado quede almacenado y sea consultable.
+
+El problema de diseño central es que existen dos categorías de
+conocimiento fundamentalmente distintas, y tratarlas como si fueran una
+sola introduce ambigüedad semántica real:
 
 - **Hechos verificados:** perfiles de usuario, métricas históricas,
-  características estables de entidades. Conocimiento monótono.
+  características estables de entidades. Conocimiento monótono — una vez
+  confirmado, solo se actualiza, nunca se refuta.
 - **Suposiciones de negocio:** hipótesis sobre comportamiento, inferencias
-  del modelo. Conocimiento no monótono: pueden ser refutadas sin invalidar
-  el historial.
+  del modelo. Conocimiento no monótono — pueden ser refutadas por nueva
+  evidencia sin que eso invalide el historial de por qué se creyeron en
+  su momento.
 
-Un JSON plano por ejecución no escala a más de un millón de entidades, no
-permite re-evaluación automática y no ofrece trazabilidad temporal.
+Un almacenamiento único y homogéneo no puede servir bien a ambas
+categorías a la vez: forzar suposiciones refutables dentro de la misma
+estructura que hechos verificados, o viceversa, produce o bien pérdida de
+trazabilidad histórica, o bien sobre-ingeniería innecesaria para datos
+que nunca cambian. Un JSON plano por ejecución, la alternativa más
+simple, tampoco resuelve el problema de fondo: no escala más allá de un
+millón de entidades, no permite re-evaluación automática de suposiciones
+antiguas, y no ofrece ninguna trazabilidad temporal de cambios de opinión.
 
 ---
 
@@ -140,6 +172,16 @@ intervalos, mientras que el KS-test opera sobre la distribución empírica
 completa sin parámetros de discretización.
 
 ---
+
+> **Nota conceptual (fuera del alcance técnico de este ADR):** la
+> separación entre hechos verificados (Componente 1) y suposiciones de
+> negocio (Componente 2) guarda un paralelismo con un marco teórico
+> personal en desarrollo del autor — la Zeugmatización epistemológica —
+> donde el plano Qué-Cómo (Platónico) corresponde a hechos concretos y
+> el plano Qué-Por qué (Socrático) corresponde al manejo de
+> incertidumbre e hipótesis. Esta nota es una referencia cruzada, no un
+> requisito: el ADR es completo y verificable sin conocer ese marco, y
+> su desarrollo formal vive fuera de la documentación técnica de SIGMA.
 
 ## Consecuencias positivas
 

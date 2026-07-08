@@ -9,10 +9,13 @@ aprobado-por: Prof. Marx A. García Delgado
 
 # Índice de Architecture Decision Records — SIGMA
 
-Este documento es el punto de entrada al sistema de decisiones arquitectónicas
-de SIGMA. No contiene decisiones propias: organiza, describe y relaciona los
-ADRs del ecosistema. Todo agente, desarrollador u operador que necesite entender
-por qué el sistema funciona como funciona debe comenzar aquí.
+Este documento es el punto de entrada al sistema de decisiones
+arquitectónicas de SIGMA. No contiene decisiones propias: organiza,
+describe y relaciona los 16 ADRs del ecosistema, mostrando cómo se
+conectan entre sí y en qué variantes y submodos aplica cada uno. Todo
+agente, desarrollador u operador que necesite entender por qué el
+sistema funciona como funciona — y no de otra manera — debe comenzar
+aquí, antes de tocar código o proponer un cambio de diseño.
 
 ---
 
@@ -36,26 +39,37 @@ de los que dependen de él.
 
 ---
 
+## Estados posibles
+
+| Estado | Significado |
+|---|---|
+| ✅ **Aceptado** | Decisión vigente, implementada o en implementación |
+| 🟡 **Propuesto** | En revisión, pendiente de aprobación |
+| 🔄 **Supersedido** | Reemplazado por un ADR posterior. El ADR antiguo se mantiene con su estado actualizado y enlace al sucesor |
+| ⛔ **Obsoleto** | Retirado sin reemplazo directo |
+
+
+
 ## Tab. 1 — Registro completo de ADRs
 
 | ADR | Archivo | Título | Estado | Versión |
 |---|---|---|---|---|
-| ADR-001 | [adr-001-memoria-epistemica.md](adr-001-memoria-epistemica.md) | Memoria Epistémica — Feature Store y Grafo de Suposiciones | ✅ Aceptado | **1.4** |
-| ADR-002 | [adr-002-mapreduce-skills.md](adr-002-mapreduce-skills.md) | Paralelismo Masivo Intra-Skill mediante MapReduce | ✅ Aceptado | 1.3 |
-| ADR-003 | [adr-003-equipo-3-colores.md](adr-003-equipo-3-colores.md) | Seguridad Automática con Modelo Red/Blue/Green | ✅ Aceptado | 1.3 |
-| ADR-004 | [adr-004-vibe-diff-mfa.md](adr-004-vibe-diff-mfa.md) | Vibe Diff Persistente y Human-in-the-Loop con MFA | ✅ Aceptado | **1.5** |
-| ADR-005 | [adr-005-policy-server.md](adr-005-policy-server.md) | Policy Server Híbrido — Estructural y Semántico | ✅ Aceptado | 1.3 |
-| ADR-006 | [adr-006-context-placeholders.md](adr-006-context-placeholders.md) | Higiene del Contexto con Placeholders y ContextResolver | ✅ Aceptado | 1.3 |
-| ADR-007 | [adr-007-evaluacion-multidimensional.md](adr-007-evaluacion-multidimensional.md) | Evaluación Multidimensional (7D) con LLM-as-Judge | ✅ Aceptado | 1.3 |
-| ADR-008 | [adr-008-restriccion-epistemica.md](adr-008-restriccion-epistemica.md) | Contención Epistémica Estricta (K ⊆ X) | ✅ Aceptado | 1.3 |
-| ADR-009 | [adr-009-especificacion-skills.md](adr-009-especificacion-skills.md) | Especificación de Skills — Gherkin, LTL y Siete Artefactos | ✅ Aceptado | **1.5** |
-| ADR-010 | [adr-010-gestion-secretos.md](adr-010-gestion-secretos.md) | Directiva de Remediación de Secretos — 12-Factor | ✅ Aceptado | 1.3 |
-| ADR-011 | [adr-011-trazabilidad-langfuse.md](adr-011-trazabilidad-langfuse.md) | Trazabilidad de Pipelines en Langfuse V2 | ✅ Aceptado | **1.4** |
-| ADR-012 | [adr-012-versionado-skills.md](adr-012-versionado-skills.md) | Gestión de Versiones y Promoción de Skills | ✅ Aceptado | 1.3 |
-| ADR-013 | [adr-013-auditoria-trayectoria.md](adr-013-auditoria-trayectoria.md) | Auditoría de Trayectoria de Agentes | ✅ Aceptado | 1.3 |
-| ADR-014 | [adr-014-generacion-dinamica-skills.md](adr-014-generacion-dinamica-skills.md) | Generación Dinámica de Nuevos Skills bajo Demanda | 🟡 Propuesto | 1.0 |
-| ADR-015 | [adr-015-hamilton-selector-streaming.md](adr-015-hamilton-selector-streaming.md) | Arquitectura de Análisis en Tiempo Real con Hamilton Selector | 🟡 Propuesto | **1.1** |
-| ADR-016 | [adr-016-orquestacion-jerarquica.md](adr-016-orquestacion-jerarquica.md) | Orquestación Jerárquica de Tres Orquestadores (Director/Engineer) | 🟡 Propuesto | **1.0** |
+| ADR-001 | [adr-001-memoria-epistemica.md](adr-001-memoria-epistemica.md) | Memoria Epistémica — Feature Store y Grafo de Suposiciones | ✅ Aceptado | **1.5** |
+| ADR-002 | [adr-002-mapreduce-skills.md](adr-002-mapreduce-skills.md) | Paralelismo Masivo Intra-Skill mediante MapReduce | ✅ Aceptado | **1.4** |
+| ADR-003 | [adr-003-equipo-3-colores.md](adr-003-equipo-3-colores.md) | Seguridad Automática con Modelo Red/Blue/Green | ✅ Aceptado | **1.4** |
+| ADR-004 | [adr-004-vibe-diff-mfa.md](adr-004-vibe-diff-mfa.md) | Vibe Diff Persistente y Human-in-the-Loop con MFA | ✅ Aceptado | **1.6** |
+| ADR-005 | [adr-005-policy-server.md](adr-005-policy-server.md) | Policy Server Híbrido — Estructural y Semántico | ✅ Aceptado | **1.4** |
+| ADR-006 | [adr-006-context-placeholders.md](adr-006-context-placeholders.md) | Higiene del Contexto con Placeholders y ContextResolver | ✅ Aceptado | **1.4** |
+| ADR-007 | [adr-007-evaluacion-multidimensional.md](adr-007-evaluacion-multidimensional.md) | Evaluación Multidimensional (7D) con LLM-as-Judge | ✅ Aceptado | **1.4** |
+| ADR-008 | [adr-008-restriccion-epistemica.md](adr-008-restriccion-epistemica.md) | Contención Epistémica Estricta (K ⊆ X) | ✅ Aceptado | **1.4** |
+| ADR-009 | [adr-009-especificacion-skills.md](adr-009-especificacion-skills.md) | Especificación de Skills — Gherkin, LTL y Estructura Granular | ✅ Aceptado | **1.7** |
+| ADR-010 | [adr-010-gestion-secretos.md](adr-010-gestion-secretos.md) | Directiva de Remediación de Secretos — 12-Factor | ✅ Aceptado | **1.4** |
+| ADR-011 | [adr-011-trazabilidad-langfuse.md](adr-011-trazabilidad-langfuse.md) | Trazabilidad de Pipelines en Langfuse V2 | ✅ Aceptado | **1.5** |
+| ADR-012 | [adr-012-versionado-skills.md](adr-012-versionado-skills.md) | Gestión de Versiones y Promoción de Skills | ✅ Aceptado | **1.4** |
+| ADR-013 | [adr-013-auditoria-trayectoria.md](adr-013-auditoria-trayectoria.md) | Auditoría de Trayectoria de Agentes | ✅ Aceptado | **1.4** |
+| ADR-014 | [adr-014-generacion-dinamica-skills.md](adr-014-generacion-dinamica-skills.md) | Generación Dinámica de Nuevos Skills bajo Demanda | 🟡 Propuesto | **1.1** |
+| ADR-015 | [adr-015-hamilton-selector-streaming.md](adr-015-hamilton-selector-streaming.md) | Arquitectura de Análisis en Tiempo Real con Hamilton Selector | 🟡 Propuesto | **1.2** |
+| ADR-016 | [adr-016-orquestacion-jerarquica.md](adr-016-orquestacion-jerarquica.md) | Orquestación Jerárquica de Tres Orquestadores (Director/Engineer/Auditor) | 🟡 Propuesto | **1.1** |
 
 ---
 
@@ -110,17 +124,6 @@ tabla comparativa por costo).
 
 ---
 
-## Estados posibles
-
-| Estado | Significado |
-|---|---|
-| ✅ **Aceptado** | Decisión vigente, implementada o en implementación |
-| 🟡 **Propuesto** | En revisión, pendiente de aprobación |
-| 🔄 **Supersedido** | Reemplazado por un ADR posterior. El ADR antiguo se mantiene con su estado actualizado y enlace al sucesor |
-| ⛔ **Obsoleto** | Retirado sin reemplazo directo |
-
----
-
 ## Protocolo de modificación
 
 Los ADRs son inmutables una vez aceptados. Si una decisión cambia, se crea
@@ -129,8 +132,32 @@ ADR obliga a revisar todos los ADRs que lo referencian como dependencia directa.
 
 ---
 
+## Notas de revisión por tabla
+
+- **ADR-001 → v1.5:** Contexto ampliado con el rol de fundamento de K⊆X. Nota conceptual de Zeugmatización agregada.
+- **ADR-002 → v1.4:** Contexto ampliado explicando su rol como extensión de ADR-009.
+- **ADR-003 → v1.4:** Contexto ampliado con las tres fases de riesgo que cubre.
+- **ADR-004 → v1.6:** Contexto ampliado como cierre de la autonomía de ADR-001/002. Literales de v1.5 renumerados.
+- **ADR-005 → v1.4:** Contexto ampliado como intercepción previa a Vibe Diff y Red/Blue/Green.
+- **ADR-006 → v1.4:** Contexto ampliado como mecanismo de portabilidad entre variantes.
+- **ADR-007 → v1.4:** Contexto ampliado distinguiendo honestidad (K⊆X) de calidad (7D).
+- **ADR-008 → v1.4:** Contexto ampliado como ley epistémica central de la que dependen ADR-001/002/007.
+- **ADR-009 → v1.7:** Contexto ampliado como contrato del que dependen ADR-002/006/011.
+- **ADR-010 → v1.4:** Contexto ampliado como fundamento de ADR-004/005/006.
+- **ADR-011 → v1.5:** Contexto ampliado como correlación común de ADR-003/005/007. Literales de v1.4 renumerados.
+- **ADR-012 → v1.4:** Contexto ampliado como proceso operativo de la obligatoriedad de tests/ (ADR-009).
+- **ADR-013 → v1.4:** Contexto ampliado como implementación real de D6 (ADR-007). Corregida referencia rota "ADR-00" a **ADR-016**.
+- **ADR-014 → v1.1:** Contexto ampliado como escenario de mayor riesgo del ecosistema.
+- **ADR-015 → v1.2:** Contexto ampliado como extensión reservada desde ADR-009, coexistente con ADR-016.
+- **ADR-016 → v1.1:** Contexto ampliado explicando su doble función: formalizar LangGraph y gobernar el Hito 2.
+
 ## Notas de la revisión de julio 2026 (v1.5 del índice)
 
+- **ADR-001 → v1.5:** Contexto ampliado para explicar qué es la Memoria
+  Epistémica y por qué existe en el ecosistema (fundamento operativo de
+  K ⊆ X, ADR-008) antes de entrar al problema técnico. Se agrega nota
+  conceptual de referencia cruzada a la Zeugmatización epistemológica,
+  explícitamente delimitada como fuera del alcance técnico del ADR.
 - **ADR-004 → v1.5:** el mecanismo HITL se actualizó al verificado en el
   Hito 1 (LangGraph `interrupt()` + SqliteSaver); el polling a Redis pasó
   a alternativa descartada.

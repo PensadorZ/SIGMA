@@ -1,16 +1,24 @@
 ---
 id: ADR-006
 titulo: Higiene del Contexto con Placeholders y ContextResolver
-version: 1.3
+version: 1.4
 estado: Aceptado
 fecha-original: 2026-06
 fecha-revision: 2026-06
-supersede: ADR-006 v1.2
+supersede: ADR-006 v1.3
 referencias-minimas: ADR-005, ADR-010, ADR-011
 aprobado-por: Prof. Marx A. García Delgado
 ---
 
 # ADR-006: Higiene del Contexto con Placeholders y ContextResolver
+
+## Resumen ejecutivo de cambios v1.4
+
+Se amplía la sección de Contexto para explicar primero qué es el
+ContextResolver y por qué existe — como el mecanismo que hace portable
+un mismo skill.py entre las cuatro variantes sin fuga de secretos,
+conectando directamente con ADR-010 — antes de entrar al detalle de los
+tres problemas concretos que resuelve.
 
 ## Resumen ejecutivo de cambios v1.3
 
@@ -22,10 +30,23 @@ secretos. Se incorpora el histórico de versiones.
 
 ## Contexto
 
-Los skills contienen prompts, rutas y parámetros que varían entre entornos y
-entre ejecuciones. Si estos valores se escriben directamente en el código ocurren
-hardcodeo de secretos, acoplamiento de entorno y fallos silenciosos cuando una
-variable no está definida.
+El ContextResolver es el mecanismo que permite que un mismo `skill.py`,
+escrito una sola vez, se ejecute sin modificación en SIGMA Dev, Lite,
+Full o Runtime — sustituyendo en tiempo de ejecución cualquier valor que
+dependa del entorno, sin que ese valor viva jamás escrito directamente
+en el código ni en la especificación del skill. Sin este mecanismo, cada
+skill tendría que hardcodear rutas, nombres de tabla y credenciales
+específicas de cada entorno, lo que además de acoplar el código a un
+entorno concreto, abriría exactamente la puerta de fuga de secretos que
+ADR-010 existe para cerrar.
+
+Los skills contienen prompts, rutas y parámetros que varían entre
+entornos y entre ejecuciones. Si estos valores se escriben directamente
+en el código ocurren tres problemas concretos: hardcodeo de secretos,
+acoplamiento de entorno (el skill deja de ser portable), y fallos
+silenciosos cuando una variable no está definida — el peor de los tres,
+porque el sistema no falla de inmediato con un mensaje claro, sino que
+se comporta de forma incorrecta sin avisar.
 
 ---
 

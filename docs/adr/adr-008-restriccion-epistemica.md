@@ -1,16 +1,22 @@
 ---
 id: ADR-008
 titulo: Contención Epistémica Estricta (K ⊆ X)
-version: 1.3
+version: 1.4
 estado: Aceptado
 fecha-original: 2026-06
 fecha-revision: 2026-06
-supersede: ADR-008 v1.2
+supersede: ADR-008 v1.3
 referencias-minimas: ADR-001, ADR-002, ADR-007
 aprobado-por: Prof. Marx A. García Delgado
 ---
 
 # ADR-008: Contención Epistémica Estricta (K ⊆ X)
+
+## Resumen ejecutivo de cambios v1.4
+
+Se amplía la sección de Contexto para explicar primero que K ⊆ X es la
+ley epistémica central de la que dependen ADR-001, ADR-002 y ADR-007 —
+antes de entrar al detalle de las tres capas de implementación.
 
 ## Resumen ejecutivo de cambios v1.3
 
@@ -22,12 +28,21 @@ datos insuficientes. Se incorpora el histórico de versiones.
 
 ## Contexto
 
-Los modelos de lenguaje generan texto estadísticamente plausible. Cuando el
-contexto no contiene la información necesaria, el modelo completa el gap con
-texto que puede ser factualmente incorrecto. En SIGMA, una alucinación no es
-solo un error de calidad: puede ser un error de negocio con consecuencias
-reales.
+La Contención Epistémica K ⊆ X es la ley epistémica central de SIGMA:
+es la restricción de la que dependen, directa o indirectamente, la
+Memoria Epistémica (ADR-001, que separa hechos de suposiciones
+precisamente para poder aplicar esta restricción a cada una por
+separado), la propagación de `trace_id` que exige ADR-002, y la
+Evaluación Multidimensional de ADR-007 (que evalúa *calidad* dado que la
+*honestidad* del output ya está garantizada aquí, no al revés). Sin esta
+restricción, ninguna de esas piezas tendría un principio unificador que
+las conecte.
 
+Los modelos de lenguaje generan texto estadísticamente plausible. Cuando
+el contexto no contiene la información necesaria, el modelo completa el
+vacío con texto que puede ser factualmente incorrecto. En SIGMA, una
+alucinación no es solo un error de calidad: puede ser un error de
+negocio con consecuencias reales.
 ---
 
 ## Decisión

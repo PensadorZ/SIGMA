@@ -1,16 +1,24 @@
 ---
 id: ADR-002
 titulo: Paralelismo Masivo Intra-Skill mediante Plantillas MapReduce
-version: 1.3
+version: 1.4
 estado: Aceptado
 fecha-original: 2026-06
 fecha-revision: 2026-06
-supersede: ADR-002 v1.2
+supersede: ADR-002 v1.3
 referencias-minimas: ADR-001, ADR-009, ADR-011
 aprobado-por: Prof. Marx A. García Delgado
 ---
 
 # ADR-002: Paralelismo Masivo Intra-Skill mediante Plantillas MapReduce
+
+## Resumen ejecutivo de cambios v1.4
+
+Se amplía la sección de Contexto para abrir con qué es este mecanismo y
+por qué existe en el ecosistema — como extensión de la especificación
+de skills (ADR-009) — antes de entrar al problema técnico de
+particionado, haciendo explícita su conexión con el requisito de
+trazabilidad heredado de ADR-001.
 
 ## Resumen ejecutivo de cambios v1.3
 
@@ -23,12 +31,29 @@ garantizar determinismo. Se incorpora el histórico de versiones.
 
 ## Contexto
 
-SIGMA debe procesar datasets a gran escala. El caso de uso principal
-(WC2026-Tweets) involucra más de un millón de mensajes. Procesar ese volumen
-en un único worker es inviable en tiempo y coste. El diseñador de un skill
-no debería crear nodos DAG manualmente por cada partición. La trazabilidad
-debe mantenerse sobre cada worker individual para reintentar solo las
-particiones fallidas.
+## Contexto
+
+SIGMA ejecuta skills sobre datasets que pueden alcanzar volúmenes de más
+de un millón de registros — el caso de uso de referencia (WC2026-Tweets)
+es el ejemplo concreto. Sin un mecanismo de paralelización nativo en la
+especificación de skills (ADR-009), cada skill que necesitara procesar
+ese volumen tendría que implementar su propia lógica de particionado y
+coordinación desde cero, duplicando esfuerzo entre skills y arriesgando
+a que cada implementación resuelva el problema de forma distinta — o,
+peor, que alguna directamente no escale y falle en producción sin
+previo aviso.
+
+El problema de diseño es doble. Por un lado, procesar el dataset
+completo en un único worker es inviable en tiempo y en coste. Por otro,
+si se resuelve de forma manual creando nodos del DAG uno por cada
+partición, el diseñador del skill queda expuesto a una explosión
+combinatoria de nodos según el volumen de datos de cada corrida,
+volviendo el DAG imposible de razonar o mantener a medida que el
+dataset crece. A esto se suma un requisito no negociable heredado de
+ADR-001: la trazabilidad debe preservarse a nivel de cada worker
+individual, no solo a nivel del skill completo, de modo que un fallo
+parcial permita reintentar únicamente las particiones afectadas, sin
+repetir el trabajo ya completado con éxito.
 
 ---
 

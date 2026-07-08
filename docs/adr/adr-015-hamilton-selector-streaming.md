@@ -1,11 +1,11 @@
 ---
 id: ADR-015
 titulo: Arquitectura de Análisis en Tiempo Real con Hamilton Selector
-version: 1.1
+version: 1.2
 estado: Propuesto
 fecha-original: 2026-06
 fecha-revision: 2026-07
-supersede: ADR-015 v1.0
+supersede: ADR-015 v1.1
 referencias-minimas: ADR-002, ADR-008, ADR-009, ADR-010, ADR-012
 hito-de-aplicacion: Hito 3
 aprobado-por: Pendiente de aprobación por Prof. Marx A. García Delgado
@@ -13,6 +13,14 @@ nombre-archivo: adr-015-hamilton-selector-streaming.md
 ---
 
 # ADR-015: Arquitectura de Análisis en Tiempo Real con Hamilton Selector
+
+## Resumen ejecutivo de cambios v1.2
+
+Se amplía la sección de Contexto para explicar primero que esta
+arquitectura de streaming está reservada desde ADR-009 (skills
+0016-0019) y coexiste como subgrafo par del orquestador batch que
+ADR-016 formaliza — antes de entrar al detalle del problema de
+priorización con recursos limitados.
 
 ## Resumen ejecutivo de cambios v1.1
 
@@ -29,20 +37,28 @@ orquestación queda registrada como pendiente de auditoría documental.
 
 ## Contexto
 
+El Hamilton Selector y la arquitectura de streaming que define este ADR
+son la extensión natural del ecosistema hacia el tiempo real —
+reservada desde ADR-009 en el rango de skills `0016`-`0019`, y pensada
+para **coexistir, no competir**, con el orquestador batch del Hito 1: el
+mismo LangGraph que ADR-016 formaliza como motor único del ecosistema
+sigue corriendo el pipeline batch mientras este grafo de streaming opera
+en paralelo, como un cuarto subgrafo par.
+
 Los Hitos 1 y 2 de SIGMA operan en modo **batch**: el pipeline procesa
 datasets completos (Tirendaz 22.5K → Zenodo 130K → Mendeley 28M+) en
-ejecuciones discretas. Sin embargo, el caso de uso WC2026-Tweets tiene una
-dimensión de tiempo real: durante los partidos, el flujo de mensajes es
-continuo y el valor del análisis decae en minutos.
+ejecuciones discretas. Sin embargo, el caso de uso WC2026-Tweets tiene
+una dimensión de tiempo real: durante los partidos, el flujo de mensajes
+es continuo y el valor del análisis decae en minutos.
 
 Sin una arquitectura de streaming, SIGMA no puede: detectar picos de
 sentimiento durante eventos en vivo, alimentar dashboards reactivos, ni
 priorizar qué mensajes analizar cuando el caudal supera la capacidad de
 cómputo local.
 
-El problema de priorización es central: con recursos limitados (SIGMA Full,
-cómputo local), no todos los mensajes pueden analizarse en tiempo real. Se
-necesita un **selector** que decida qué procesar primero.
+El problema de priorización es central: con recursos limitados (SIGMA
+Full, cómputo local), no todos los mensajes pueden analizarse en tiempo
+real. Se necesita un **selector** que decida qué procesar primero.
 
 ---
 

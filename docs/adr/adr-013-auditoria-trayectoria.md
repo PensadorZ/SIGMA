@@ -1,16 +1,25 @@
 ---
 id: ADR-013
 titulo: Auditoría de Trayectoria de Agentes
-version: 1.3
+version: 1.4
 estado: Aceptado
 fecha-original: 2026-06
 fecha-revision: 2026-06
-supersede: ADR-013 v1.2
+supersede: ADR-013 v1.3
 referencias-minimas: ADR-003, ADR-005, ADR-008, ADR-011
 aprobado-por: Prof. Marx A. García Delgado
 ---
 
 # ADR-013: Auditoría de Trayectoria de Agentes
+
+## Resumen ejecutivo de cambios v1.4
+
+Se amplía la sección de Contexto para explicar primero que este ADR
+implementa la medición real de D6 (ADR-007) y complementa a K⊆X
+(ADR-008) como la otra mitad de la auditabilidad de un agente. Se
+corrige la referencia rota "ADR-00" del Agente Auditor a **ADR-016**,
+donde se define formalmente como el tercer orquestador del patrón
+Director/Engineer/Auditor.
 
 ## Resumen ejecutivo de cambios v1.3
 
@@ -22,22 +31,33 @@ consecuencias operacionales. Se incorpora el histórico de versiones.
 
 ## Contexto
 
-Un agente puede producir el output correcto tomando el camino equivocado.
-Puede llamar herramientas en el orden incorrecto, acceder a tablas que no
-debería, o consumir diez veces más recursos y aun así producir un resultado
-que supera los tests unitarios. La trayectoria es la secuencia de herramientas,
-modelos y decisiones que el agente tomó para llegar al output. Auditar la
-trayectoria, y no solo el output, permite detectar comportamientos inesperados,
-verificar que el agente operó dentro de los límites de K⊆X (ADR-008), e
-identificar ineficiencias.
+La Auditoría de Trayectoria es el mecanismo que hace posible medir D6
+(calidad de trayectoria) en la Evaluación Multidimensional de ADR-007 —
+sin él, esa dimensión sería una intención sin implementación real. Usa
+las trazas de Langfuse (ADR-011) como fuente de verdad, y sus hallazgos
+alimentan directamente al Blue Team (ADR-003) cuando detecta
+desviaciones graves. Es, junto con K⊆X (ADR-008), la otra mitad de lo
+que hace a un agente de SIGMA auditable: K⊆X garantiza que lo que el
+agente afirma es honesto, mientras que este ADR garantiza que el camino
+que tomó para llegar ahí también es verificable.
+
+Un agente puede producir el output correcto tomando el camino
+equivocado. Puede llamar herramientas en el orden incorrecto, acceder a
+tablas que no debería, o consumir diez veces más recursos y aun así
+producir un resultado que supera los tests unitarios. La trayectoria es
+la secuencia de herramientas, modelos y decisiones que el agente tomó
+para llegar al output. Auditar la trayectoria, y no solo el output,
+permite detectar comportamientos inesperados, verificar que el agente
+operó dentro de los límites de K⊆X (ADR-008), e identificar ineficiencias.
 
 ---
 
 ## Decisión
 
-El agente Auditor verifica la trayectoria real de cada ejecución contra la
-trayectoria esperada declarada en el `SKILL.md` de ADR-009, usando las trazas
-de Langfuse V2 de ADR-011 como fuente de verdad.
+El agente Auditor (Definido en ADR-00) verifica la trayectoria real de 
+cada ejecución contra la trayectoria esperada declarada en el `SKILL.md` 
+de ADR-009, usando las trazas de Langfuse V2 (o de cualquier otro servicio de
+trazabiidad tales como...) de ADR-011 como fuente de verdad.
 
 ### Fig. 1 — Componentes de la trayectoria completa auditable
 

@@ -1,33 +1,51 @@
 ---
 id: ADR-011
 titulo: Trazabilidad de Pipelines en Langfuse V2
-version: 1.4
+version: 1.5
 estado: Aceptado
 fecha-original: 2026-06
 fecha-revision: 2026-07
-supersede: ADR-011 v1.3
+supersede: ADR-011 v1.4
 referencias-minimas: ADR-003, ADR-005, ADR-007, ADR-009
 aprobado-por: Prof. Marx A. García Delgado
 ---
 
 # ADR-011: Trazabilidad de Pipelines en Langfuse V2
 
+## Resumen ejecutivo de cambios v1.5
+
+Se amplía la sección de Contexto para explicar primero que esta
+trazabilidad es lo que permite correlacionar las decisiones del Policy
+Server (ADR-005), las verificaciones del Blue Team (ADR-003) y las
+evaluaciones 7D (ADR-007) bajo un mismo `trace_id` — antes de entrar al
+detalle de la jerarquía de trazas.
+
 ## Resumen ejecutivo de cambios v1.4
 
 Se fija (pin) la imagen Docker de Langfuse a la etiqueta `:2` y se declara
 la restricción `langfuse<3` en `requirements.txt` como constraints críticos:
-el servidor autoalojado v2 carece de endpoint OTLP, por lo que el SDK v3
-(que lo requiere) es incompatible. Hallazgo verificado durante el Hito 1.
+el servidor autoalojado v2 carece de endpoint OTLP (OpenTelemetry Protocol), 
+por lo que el SDK v3 (que lo requiere) es incompatible. Hallazgo verificado 
+durante el Hito 1.
 
 ---
 
 ## Contexto
 
+La trazabilidad en Langfuse es el ojo común que permite auditar todo lo
+demás: sin ella, las decisiones del Policy Server (ADR-005), las
+verificaciones AgBOM del Blue Team (ADR-003) y las evaluaciones de las
+7 dimensiones (ADR-007) existirían como eventos aislados, sin forma de
+correlacionarlos entre sí bajo un mismo `trace_id`, ni de reconstruir
+después qué pasó realmente durante una ejecución. Es, en ese sentido, la
+capa de memoria de auditoría a corto plazo que complementa a la Memoria
+Epistémica de largo plazo (ADR-001).
+
 Un sistema multiagente sin observabilidad es una caja negra. Cuando un
 pipeline falla se necesita saber qué herramientas se ejecutaron, cuántos
-tokens se consumieron, qué modelo ejecutó qué subtarea, en qué worker falló
-y cuánto tardó cada etapa. Langfuse V2 es el backend de observabilidad
-elegido por ser open source y autoalojable.
+tokens se consumieron, qué modelo ejecutó qué subtarea, en qué worker
+falló y cuánto tardó cada etapa. Langfuse V2 es el backend de
+observabilidad elegido por ser open source y autoalojable.
 
 ---
 
@@ -96,7 +114,7 @@ langfuse<3
 ```
 
 **Razón verificada en el Hito 1:** el SDK de Langfuse v3 exige un endpoint
-OTLP (OpenTelemetry Protocol) que el servidor autoalojado v2 no expone. Usar
+OTLP que el servidor autoalojado v2 no expone. Usar
 `:latest` en la imagen o instalar `langfuse>=3` en el cliente rompe la
 trazabilidad silenciosamente. La migración a Langfuse v3 requeriría desplegar
 el servidor v3 completo y queda fuera del alcance del Hito 1 y 2.

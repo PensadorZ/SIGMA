@@ -1,16 +1,25 @@
 ---
 id: ADR-003
 titulo: Seguridad Automática con el Modelo Red/Blue/Green
-version: 1.3
+version: 1.4
 estado: Aceptado
 fecha-original: 2026-06
 fecha-revision: 2026-06
-supersede: ADR-003 v1.2
+supersede: ADR-003 v1.3
 referencias-minimas: ADR-004, ADR-005, ADR-011
 aprobado-por: Prof. Marx A. García Delgado
 ---
 
 # ADR-003: Seguridad Automática con el Modelo Red/Blue/Green
+
+## Resumen ejecutivo de cambios v1.4
+
+Se amplía la sección de Contexto para explicar primero qué es el modelo
+Red/Blue/Green y por qué existe en el ecosistema — como el mecanismo que
+cubre las tres fases de riesgo (antes, durante, después de la ejecución)
+que ningún control puramente preventivo como el Policy Server (ADR-005)
+puede cubrir por sí solo — antes de entrar a la clasificación de las
+tres clases de amenaza.
 
 ## Resumen ejecutivo de cambios v1.3
 
@@ -22,17 +31,37 @@ histórico de versiones.
 
 ## Contexto
 
-Un sistema multiagente que ejecuta código generado por LLMs y accede a datos
-externos es vulnerable a tres clases de amenaza:
+## Contexto
 
-- **Amenazas activas:** prompt injection, slopsquatting, código malicioso.
-- **Amenazas pasivas:** drift silencioso en el comportamiento de los agentes,
-  dependencias no auditadas.
-- **Fallos de recuperación:** un agente que falla a mitad del pipeline puede
-  corromper el estado parcial sin posibilidad de rollback limpio.
+SIGMA delega en LLMs la generación de código, la interpretación de
+prompts, y decisiones que se ejecutan contra datos e infraestructura
+reales. Esa delegación es justamente lo que hace posible la autonomía
+del sistema descrita en el resto del ecosistema (ADR-001, ADR-002), pero
+también abre una superficie de riesgo que ningún mecanismo de gobernanza
+puramente preventivo (como el Policy Server de ADR-005) puede cubrir por
+sí solo: un LLM puede comportarse de forma correcta en el momento de la
+validación estructural y aun así degradarse, ser manipulado, o fallar a
+mitad de una ejecución larga. SIGMA necesita, por tanto, un mecanismo de
+seguridad que no solo valide antes de actuar, sino que vigile durante la
+ejecución y sepa recuperarse después de un fallo — las tres fases que
+ningún control estático cubre.
 
-Un único auditor al final de la ejecución no puede detectar ni prevenir estas
-amenazas en tiempo real.
+Un sistema multiagente que ejecuta código generado por LLMs y accede a
+datos externos es vulnerable a tres clases de amenaza distintas, cada
+una con una ventana temporal distinta:
+
+- **Amenazas activas:** prompt injection, slopsquatting, código
+  malicioso — ocurren en el momento de la generación o ejecución.
+- **Amenazas pasivas:** drift silencioso en el comportamiento de los
+  agentes, dependencias no auditadas — se acumulan con el tiempo, sin
+  un evento único que las dispare.
+- **Fallos de recuperación:** un agente que falla a mitad del pipeline
+  puede corromper el estado parcial sin posibilidad de rollback limpio
+  — ocurren después del hecho, cuando ya es tarde para prevenir.
+
+Un único auditor al final de la ejecución no puede detectar ni prevenir
+estas tres amenazas en tiempo real, porque para cuando revisa el
+resultado, las tres ventanas temporales ya se cerraron.
 
 ---
 

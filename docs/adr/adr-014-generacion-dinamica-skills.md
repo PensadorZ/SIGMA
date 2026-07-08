@@ -1,16 +1,24 @@
 ---
 id: ADR-014
 titulo: Generación Dinámica de Nuevos Skills bajo Demanda
-version: 1.0
+version: 1.1
 estado: Propuesto
 fecha-original: 2026-06
 fecha-revision: 2026-06
-supersede: Ninguno
+supersede: ADR-014 v1.0
 referencias-minimas: ADR-003, ADR-004, ADR-009, ADR-012
 aprobado-por: Pendiente de aprobación por Prof. Marx A. García Delgado
 ---
 
 # ADR-014: Generación Dinámica de Nuevos Skills bajo Demanda
+
+## Resumen ejecutivo de cambios v1.1
+
+Se amplía la sección de Contexto para explicar primero que este ADR es
+el escenario de mayor riesgo del ecosistema — el único donde el sistema
+escribe su propio código — y que no introduce mecanismos nuevos, sino
+que orquesta juntos los de ADR-003, ADR-004, ADR-005, ADR-009 y ADR-012
+en su punto de mayor exigencia.
 
 ## Resumen ejecutivo
 
@@ -26,11 +34,22 @@ ADR es aplicable en todas las variantes excepto SIGMA Dev.
 
 ## Contexto
 
-El catálogo de skills de SIGMA es inicialmente finito. En un ecosistema que
-opera en dominios tan diversos como ciencia de datos, ingeniería, física,
-matemática o filosofía, surgirán inevitablemente necesidades funcionales no
-cubiertas. Sin un mecanismo formal, el sistema queda limitado a su catálogo
-inicial, perdiendo su carácter de ecosistema autónomo y adaptable.
+La Generación Dinámica de Skills es el escenario de mayor riesgo
+gobernado por todo el ecosistema: es el único punto donde el propio
+sistema escribe código nuevo que después se ejecutará con autoridad
+real. Por eso este ADR no introduce mecanismos nuevos — orquesta, en su
+punto de mayor exigencia, todos los que ya existen: la especificación de
+ADR-009, la validación del Policy Server (ADR-005), las pruebas del
+Green Team (ADR-003), la aprobación de ADR-004, y el versionado de
+ADR-012. Si alguno de esos mecanismos tuviera una falla, este es el
+lugar donde esa falla tendría el mayor impacto posible.
+
+El catálogo de skills de SIGMA es inicialmente finito. En un ecosistema
+que opera en dominios tan diversos como ciencia de datos, ingeniería,
+física, matemática o filosofía, surgirán inevitablemente necesidades
+funcionales no cubiertas. Sin un mecanismo formal, el sistema queda
+limitado a su catálogo inicial, perdiendo su carácter de ecosistema
+autónomo y adaptable.
 
 ---
 

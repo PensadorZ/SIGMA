@@ -1,16 +1,23 @@
 ---
 id: ADR-007
 titulo: Evaluación Multidimensional (7 Dimensiones) con LLM-as-Judge
-version: 1.3
+version: 1.4
 estado: Aceptado
 fecha-original: 2026-06
 fecha-revision: 2026-06
-supersede: ADR-007 v1.2
+supersede: ADR-007 v1.3
 referencias-minimas: ADR-001, ADR-008, ADR-011
 aprobado-por: Prof. Marx A. García Delgado
 ---
 
 # ADR-007: Evaluación Multidimensional (7 Dimensiones) con LLM-as-Judge
+
+## Resumen ejecutivo de cambios v1.4
+
+Se amplía la sección de Contexto para explicar primero qué evalúa este
+marco y por qué es distinto de K ⊆ X (ADR-008) — uno mide si el output
+es honesto, el otro si es bueno — antes de entrar al detalle de las
+capas y las siete dimensiones.
 
 ## Resumen ejecutivo de cambios v1.3
 
@@ -22,11 +29,25 @@ el histórico de versiones.
 
 ## Contexto
 
-Un pipeline que supera los tests unitarios puede malinterpretar la intención
-del usuario, gastar diez veces más recursos de los necesarios, requerir cinco
-correcciones antes de dar con lo pedido, o producir código funcional pero
-ilegible. Los frameworks de evaluación tradicionales miden una o dos dimensiones.
-SIGMA necesita un marco completo.
+La Evaluación Multidimensional es el mecanismo que decide si un
+resultado técnicamente correcto es también un resultado *bueno* — y
+existe porque "pasar los tests" y "ser un resultado de calidad" no son
+lo mismo. Sin este marco, SIGMA solo sabría si un skill funcionó, nunca
+si funcionó bien: si gastó recursos razonables, si entendió lo que el
+usuario realmente pedía, o si el código que produjo es mantenible. Este
+ADR trabaja junto con la Contención Epistémica K ⊆ X (ADR-008,
+restricción sobre qué puede afirmarse como cierto) y con la trazabilidad
+de ADR-011 (dónde queda registrada cada evaluación), pero resuelve un
+problema distinto de ambos: no si el output es honesto, sino si el
+output es bueno.
+
+Un pipeline que supera los tests unitarios puede, aun así, malinterpretar
+la intención del usuario, gastar diez veces más recursos de los
+necesarios, requerir cinco correcciones antes de dar con lo pedido, o
+producir código funcional pero ilegible. Los frameworks de evaluación
+tradicionales miden una o dos dimensiones — típicamente solo corrección
+funcional. SIGMA necesita un marco completo que capture las siete
+facetas reales de lo que hace bueno a un resultado.
 
 ---
 

@@ -1,16 +1,23 @@
 ---
 id: ADR-009
 titulo: Especificación de Skills con Gherkin, LTL y Estructura Granular
-version: 1.6
+version: 1.7
 estado: Aceptado
 fecha-original: 2026-06
 fecha-revision: 2026-07
-supersede: ADR-009 v1.5
+supersede: ADR-009 v1.6
 referencias-minimas: ADR-002, ADR-006, ADR-011
 aprobado-por: Prof. Marx A. García Delgado
 ---
 
 # ADR-009: Especificación de Skills con Gherkin, LTL y Estructura Granular
+
+## Resumen ejecutivo de cambios v1.7
+
+Se amplía la sección de Contexto para explicar primero que este ADR es
+el contrato del que dependen ADR-002 (campo `parallelism`), ADR-006
+(placeholders resueltos dentro de `skill.py`) y ADR-011 (el span por
+skill) — antes de entrar al detalle de los siete artefactos canónicos.
 
 ## Resumen ejecutivo de cambios v1.6
 
@@ -27,13 +34,24 @@ mismo). Ningún cambio rompe la compatibilidad con los skills existentes.
 
 ## Contexto
 
-Un skill debe comunicar qué hace, cuándo puede ejecutarse, qué garantiza y
-cómo se traza. Un `SKILL.md` con solo prosa no es suficiente porque es
-ambigua y no puede alimentar tests de integración. Además, los skills más
-complejos necesitan una organización interna predecible para sus activos,
-evaluaciones, scripts auxiliares y referencias. Esta organización debe
-distinguirse claramente de las carpetas globales del ecosistema para evitar
-confusiones operativas y de mantenimiento.
+ADR-009 es el contrato que da forma física a cada skill de SIGMA: es la
+respuesta a qué debe existir en disco para que un skill sea válido,
+ejecutable y verificable. Otros ADRs asumen que esta estructura ya
+existe sin volver a definirla — el campo `parallelism` de ADR-002 se
+declara en el frontmatter que este ADR especifica, el `${VAR}` de
+ADR-006 se resuelve dentro del `skill.py` que este ADR ubica, y el span
+`skill.{skill_id}` de ADR-011 traza precisamente la unidad que este ADR
+delimita. Sin esta especificación común, cada skill podría organizarse
+de forma distinta y ninguno de esos otros mecanismos tendría un punto de
+apoyo estable sobre el cual operar.
+
+Un skill debe comunicar qué hace, cuándo puede ejecutarse, qué garantiza
+y cómo se traza. Un `SKILL.md` con solo prosa no es suficiente porque es
+ambigua y no puede alimentar tests de integración. Además, los skills
+más complejos necesitan una organización interna predecible para sus
+activos, evaluaciones, scripts auxiliares y referencias. Esta
+organización debe distinguirse claramente de las carpetas globales del
+ecosistema para evitar confusiones operativas y de mantenimiento.
 
 Dos necesidades adicionales, verificadas en la práctica del Hito 1, no
 estaban justificadas formalmente en versiones anteriores de este ADR:

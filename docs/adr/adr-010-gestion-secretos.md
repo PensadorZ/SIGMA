@@ -1,16 +1,23 @@
 ---
 id: ADR-010
 titulo: Directiva de Remediación de Secretos — Configuración 12-Factor
-version: 1.3
+version: 1.4
 estado: Aceptado
 fecha-original: 2026-06
 fecha-revision: 2026-06
-supersede: ADR-010 v1.2
+supersede: ADR-010 v1.3
 referencias-minimas: ADR-004, ADR-005, ADR-006
 aprobado-por: Prof. Marx A. García Delgado
 ---
 
 # ADR-010: Directiva de Remediación de Secretos — Configuración 12-Factor
+
+## Resumen ejecutivo de cambios v1.4
+
+Se amplía la sección de Contexto para explicar primero que este ADR es
+el fundamento del que dependen ADR-004, ADR-005 y ADR-006 para su propia
+gestión de secretos — antes de entrar al detalle del Principio de
+Inyección Cero.
 
 ## Resumen ejecutivo de cambios v1.3
 
@@ -22,10 +29,20 @@ histórico de versiones.
 
 ## Contexto
 
-Las credenciales hardcodeadas representan el vector de ataque más frecuente
-y evitable. En SIGMA el riesgo es especialmente alto porque el repositorio
-puede ser público, los LLMs pueden incluir credenciales en sus outputs, y
-los prompts que se loguean pueden exponer credenciales si están embebidas.
+La Directiva de Remediación de Secretos es el fundamento sobre el que se
+apoyan varios otros mecanismos de gobernanza de SIGMA: la semilla TOTP
+del Human-in-the-Loop (ADR-004), la configuración del Policy Server
+(ADR-005), y la garantía del ContextResolver de nunca registrar un valor
+resuelto en Langfuse (ADR-006) — todos asumen que existe una forma
+disciplinada y única de manejar credenciales, y este ADR es esa forma.
+Sin esta directiva, cada uno de esos mecanismos tendría que resolver el
+problema de gestión de secretos por su cuenta, de forma inconsistente.
+
+Las credenciales hardcodeadas representan el vector de ataque más
+frecuente y evitable. En SIGMA el riesgo es especialmente alto porque el
+repositorio puede ser público, los LLMs pueden incluir credenciales en
+sus outputs, y los prompts que se loguean pueden exponer credenciales si
+están embebidas.
 
 ---
 

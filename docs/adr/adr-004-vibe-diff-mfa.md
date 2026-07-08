@@ -266,7 +266,8 @@ approval:
 
 - `webhook_receiver.py` debe estar activo antes de ejecutar pipelines con
   acciones de nivel MEDIUM o superior. El script de arranque de INSTALL.md
-  lo inicia junto con la infraestructura Docker.
+  lo inicia junto con la infraestructura Docker. Aunque en el Hito 1 dichas 
+  activaciones se hacen manualmente. 
 - La autenticación del webhook usa el `APPROVAL_TOKEN` (Full) o TOTP
   (Runtime) según Tab. 2.
 - En entornos con firewall o VPN, el webhook opera en localhost sin

@@ -1,48 +1,65 @@
 ---
 id: ADR-016
-titulo: Orquestación Jerárquica de Tres Orquestadores (Patrón Director/Engineer)
-version: 1.0
+titulo: Orquestación Jerárquica de Tres Orquestadores (Director/Engineer/Auditor)
+version: 1.1
 estado: Propuesto
 fecha-original: 2026-07
 fecha-revision: 2026-07
-supersede: Ninguno
+supersede: ADR-016 v1.0
 referencias-minimas: ADR-002, ADR-003, ADR-009, ADR-011, ADR-013
 hito-de-aplicacion: Hito 2
 aprobado-por: Pendiente de aprobación por Prof. Marx A. García Delgado
 nombre-archivo: adr-016-orquestacion-jerarquica.md
 ---
 
-# ADR-016: Orquestación Jerárquica de Tres Orquestadores (Patrón Director/Engineer)
+# ADR-016: Orquestación Jerárquica de Tres Orquestadores (Director/Engineer/Auditor)
+
+## Resumen ejecutivo de cambios v1.1
+
+Se amplía la sección de Contexto para explicar primero que este ADR
+cumple una doble función — formaliza retroactivamente a LangGraph como
+motor y define la gobernanza del Hito 2 — antes de entrar al detalle de
+la jerarquía de tres orquestadores.
 
 ## Resumen ejecutivo
 
 Este ADR formaliza la decisión ya aprobada en diseño (conversación "Eco
-MultiAgentes 5 Skills 3") de que el Hito 2 adopta una **arquitectura
+MultiAgentes Sigma 3 (Hito 1)") de que el Hito 2 adopta una **arquitectura
 jerárquica de tres orquestadores** mediante subgrafos de LangGraph, bajo el
-patrón Director/Engineer. Su redacción quedó pendiente como deuda documental;
-este ADR la salda. Aprovecha además para registrar formalmente la decisión
-que ningún ADR anterior respaldaba: **LangGraph como motor de orquestación
-del ecosistema** — resolviendo la referencia pendiente detectada en la
-auditoría del ADR-015.
+patrón Director/Engineer/Auditor. Su redacción quedó pendiente como deuda 
+documental; este ADR la salda. Aprovecha además para registrar formalmente 
+la decisión que ningún ADR anterior respaldaba: **LangGraph como motor de 
+orquestación del ecosistema** — resolviendo la referencia pendiente detectada 
+en la auditoría del ADR-015.
 
 ---
 
 ## Contexto
 
-El Hito 1 opera con un único orquestador (SupervisorAgent en LangGraph) que
-gestiona un pipeline lineal de 6 skills. El Hito 2 incorpora 9 skills
-adicionales (0005–0007, 0009–0010, 0012–0015) que incluyen entrenamiento
-ML/DL, explicabilidad, HITL avanzado e inspección — dominios con
-trayectorias, tiempos de ejecución y necesidades de supervisión radicalmente
-distintas.
+Este ADR cumple una doble función poco común: resuelve retroactivamente
+una decisión técnica que ya estaba en uso de facto desde el Hito 1
+(LangGraph como motor), y al mismo tiempo define la arquitectura de
+gobernanza para el Hito 2. Es, en ese sentido, el ADR que estabiliza el
+terreno bajo el resto del ecosistema — sin la formalización de LangGraph
+aquí, cada ADR que menciona `interrupt()`, checkpointers o subgrafos
+(ADR-004, ADR-002, ADR-015) descansaría sobre una elección de tecnología
+nunca justificada por escrito.
 
-Un orquestador único plano tendría que conocer los detalles de los 15 skills,
-sus dependencias cruzadas y sus políticas de reintento — un monolito de
-decisión que crece cuadráticamente en complejidad con cada skill nuevo.
+El Hito 1 opera con un único orquestador (SupervisorAgent en LangGraph)
+que gestiona un pipeline lineal de 6 skills. El Hito 2 incorpora 9
+skills adicionales (0005–0007, 0009–0010, 0012–0015) que incluyen
+entrenamiento ML/DL, explicabilidad, HITL avanzado e inspección —
+dominios con trayectorias, tiempos de ejecución y necesidades de
+supervisión radicalmente distintas.
 
-Adicionalmente, la auditoría del ADR-015 detectó que ninguna decisión formal
-respaldaba la elección de LangGraph: se usaba de facto desde el Hito 1 sin
-ADR que la justificara. Este documento la registra.
+Un orquestador único plano tendría que conocer los detalles de los 15
+skills, sus dependencias cruzadas y sus políticas de reintento — un
+monolito de decisión que crece cuadráticamente en complejidad con cada
+skill nuevo.
+
+Adicionalmente, la auditoría del ADR-015 detectó que ninguna decisión
+formal respaldaba la elección de LangGraph: se usaba de facto desde el
+Hito 1 sin ADR que la justificara. Este documento la registra.
 
 ---
 
@@ -74,7 +91,7 @@ Hito 1:
                        │
         ┌──────────────┼──────────────────┐
         ▼              ▼                  ▼
-ENGINEER DATOS   ENGINEER MODELOS   ENGINEER CALIDAD
+ENGINEER DATOS   ENGINEER MODELOS   ENGINEER AUDITOR
 (subgrafo 1)     (subgrafo 2)       (subgrafo 3)
 skills:          skills:            skills:
 0000-0004        0005-0007,         0012-0015

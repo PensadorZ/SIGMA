@@ -1,16 +1,24 @@
 ---
 id: ADR-012
 titulo: Gestión de Versiones y Promoción de Skills
-version: 1.3
+version: 1.4
 estado: Aceptado
 fecha-original: 2026-06
 fecha-revision: 2026-06
-supersede: ADR-012 v1.2
+supersede: ADR-012 v1.3
 referencias-minimas: ADR-009, ADR-010, ADR-011
 aprobado-por: Prof. Marx A. García Delgado
 ---
 
 # ADR-012: Gestión de Versiones y Promoción de Skills
+
+## Resumen ejecutivo de cambios v1.4
+
+Se amplía la sección de Contexto para explicar primero que este ADR es
+el proceso operativo que da consecuencia real a la obligatoriedad de
+`tests/` en ADR-009, usando las métricas de Langfuse de ADR-011 como
+criterio de promoción — antes de entrar al detalle del ciclo
+Dev → Staging → Production.
 
 ## Resumen ejecutivo de cambios v1.3
 
@@ -22,10 +30,19 @@ el histórico de versiones.
 
 ## Contexto
 
-Los skills evolucionan. Sin un protocolo formal de versionado ocurren
-regresiones silenciosas cuando una actualización rompe pipelines en producción,
-y el rollback es imposible cuando no hay versión anterior estructurada.
+ADR-012 es el mecanismo que convierte en proceso operativo lo que
+ADR-009 exige como obligatorio: la existencia de `tests/` en cada skill
+solo tiene sentido real si existe un ciclo formal que decida, con base
+en esos tests y en las métricas de Langfuse (ADR-011), si un skill está
+listo para avanzar de Dev a Staging y finalmente a Production. Sin este
+ADR, la obligatoriedad de `tests/` sería una exigencia sin consecuencia
+práctica — se escribirían tests, pero nada dictaría cuándo un skill
+puede confiarse a producción ni cómo revertir si algo sale mal.
 
+Los skills evolucionan. Sin un protocolo formal de versionado ocurren
+regresiones silenciosas cuando una actualización rompe pipelines en
+producción, y el rollback es imposible cuando no hay versión anterior
+estructurada.
 ---
 
 ## Decisión
