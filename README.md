@@ -2,7 +2,7 @@
 
 > **SIGMA is not an answer. It's the system that learns to answer.**
 
-🇪🇸 [Versión en español disponible aquí](README.md)
+🇪🇸 [Versión en español disponible aquí](README.es.md)
 
 ---
 
