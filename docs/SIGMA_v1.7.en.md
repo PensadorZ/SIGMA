@@ -9,6 +9,15 @@ of a production pipeline. Every decision the system makes is backed by
 explicit governance — epistemic memory, hallucination containment
 (`K ⊆ X`), and full traceability — instead of tacit convention.
 
+This document consolidates the construction of SIGMA's **Harness**
+during Milestone 1 — in the terms of the "Vibecoding with Multi-Agent
+Systems" course (Google-Kaggle, May 2026): Harness Architecture (Day 1),
+interoperability standards (Day 2), Skill specification (Day 3),
+security and 7-dimension evaluation (Day 4), and spec-driven development
+(Day 5). The interoperable Agent layer (Agent Cards, A2A) that same
+course describes is explicit Milestone 2 work — see AGENTS_CREATOR.md,
+Section 9.
+
 Multiple specialized agents collaborate under a triangular central
 orchestration architecture — the proposal comes with the designation of
 three orchestrators, Director/Auditor/Engineer (see ADR-016), who work
@@ -91,10 +100,19 @@ Axiometrics.
 
 ## Design philosophy
 
-**Multi-agent by design.** Every responsibility — cleaning, calculating,
-validating, visualizing — is owned by a specialized agent that collaborates
-with the others through explicit interfaces and verifiable Gherkin + LTL
-contracts.
+**Agent = Model + Harness — a new instrumentation paradigm for
+multi-agent systems.** A model on its own is not an agent riding solo
+over a pile of data: it is, as we've defined throughout this project,
+an Ecosystem that becomes something integrated once a harness gives it
+state, tool execution, feedback loops, and enforceable constraints.
+SIGMA is that harness — the decision to build it before flashy
+functionality (see below) isn't a coincidence; it's the direct
+consequence of applying this paradigm shift from the very start.
+
+**Multi-agent by design.** Every responsibility — cleaning,
+calculating, validating, visualizing — is owned by a specialized agent
+that collaborates with the others through explicit interfaces and
+verifiable Gherkin + LTL contracts.
 
 **Security and governance built in.** Not as an afterthought, but as a
 structural layer wrapping every step: pre-commit hooks, Policy Server,
@@ -104,12 +122,59 @@ Red/Blue/Green teams, STRIDE modeling before implementation.
 enough: it must also be efficient, reproducible, and faithful to the
 user's real intent, with advanced tests for high-uncertainty cases.
 
-**Cost-adaptable stack.** SIGMA can run at four operating cost tiers
-(SIGMA-FE, free, up to SIGMA-HE, high performance), each also operable in
-Dev or Runtime submode depending on the usage context.
+**Interoperability through complexity reduction, not through
+accumulating bespoke integrations.** Connecting N models to M tools
+directly requires O(N × M) integration points — with 5 models and 10
+tools, 50 separate integrations to maintain, each one able to break
+independently. The structural alternative is an intermediate layer that
+reduces that cost to O(N + M):
 
-**Epistemic containment K⊆X.** Every agent can only assert what it can
-trace back to an observed data point. No hallucination can leak into the output.
+```
+Direct integration:
+[Model A] ── [Tool 1]
+[Model B] ── [Tool 2]
+[Model C] ── [Tool 3]
+Effort: O(N × M)
+Integration with an intermediate layer (e.g. MCP):
+[Model A] ──┐
+[Model B] ──┼── [Intermediate layer] ──┬── [Tool 1]
+[Model C] ──┘                          ├── [Tool 2]
+└── [Tool 3]
+Effort: O(N + M)
+```
+
+SIGMA already applies this same principle internally, at the code level
+within a single skill (not between models and external tools, but
+between a skill and its configuration/location sources): the
+`ContextResolver` (ADR-006) is the intermediate layer between any skill
+and its configuration sources, and `_loader.py` (ADR-009) is the
+intermediate layer between the ecosystem and each skill's physical
+location. Formally adopting MCP as that same layer, but for external
+tools (see AGENTS_CREATOR.md, Section 9), is the natural extension of a
+principle the project already practices at a smaller scale, not an
+imported idea never digested.
+
+**Cost-adaptable stack.** SIGMA can run at four operating cost tiers
+(SIGMA-FE, free, up to SIGMA-HE, high performance), each also operable
+in Dev or Runtime submode depending on the usage context.
+
+**An open-source alternative that makes even the smallest projects
+possible.** SIGMA deliberately chooses LangGraph (MIT license,
+self-hostable) as its orchestration engine over `google-adk`. This
+decision isn't just technical: it's a design stance. Big tech
+companies' proprietary platforms are, understandably, oriented first
+toward their own capitalization — their business priority, which at a
+certain point makes them out of reach for small budgets, students, and
+relentlessly curious people like me. That means a developer working
+with limited resources faces a real barrier to entry if the only
+available path depends on that commercial infrastructure. SIGMA bets
+that the governance, security, and traceability discipline this
+document describes should be attainable at low operating cost — without
+"accessible" meaning "less rigorous."
+
+**Strict epistemic containment K⊆X.** Every agent can only assert what
+it can trace back to an observed data point. No hallucination can leak
+into the output.
 
 ---
 

@@ -2,7 +2,7 @@
 
 **SIGMA v1.7 — Sistema Integrado para la Gestión Multiagente**
 Autor: Prof. Marx Agustín García Delgado
-Versión: 1.1.0
+Versión: 1.2.0
 Repositorio: `PensadorZ/SIGMA` — repositorio único (código y documentación conviven en el mismo repo)
 
 ---
@@ -171,9 +171,31 @@ la intención final es comercialmente beneficiosa para esa organización.
 
 ---
 
-## 9. Historial de cambios
+## 9. Estado frente a estándares de interoperabilidad de agentes
+
+Consistente con la filosofía de SIGMA de construir gobernanza antes que
+funcionalidad vistosa, el Hito 1 estableció el Arnés completo (ADRs
+001-013) antes de abordar la capa de interoperabilidad entre agentes.
+Esta tabla documenta el estado real de cada estándar hoy:
+
+| Estándar | Rol | Estado en SIGMA |
+|---|---|---|
+| MCP | Conecta modelos a herramientas/datos | No implementado — evaluado para Hito 2 |
+| A2A | Negociación agente-a-agente, Agent Cards | No implementado — ningún componente actual tiene Agent Card; candidato para Director/Engineer/Auditor (ADR-016) |
+| A2UI | Interfaces generativas seguras | No implementado — candidato para dashboards reactivos del Hito 3 (ADR-015) |
+| AP2 / UCP | Comercio autónomo entre agentes | Fuera de alcance — SIGMA no gestiona transacciones |
+
+Ningún skill ni el orquestador del Hito 1 constituye un "Agente" A2A-
+compliant en sentido estricto: son la lógica de orquestación y las
+funciones que el Arnés coordina. Formalizar esta capa es trabajo
+explícito del Hito 2, no una omisión del Hito 1.
+
+---
+
+## 10. Historial de cambios
 
 | Versión | Fecha | Cambio |
 |---|---|---|
 | 1.0.0 | Eco MultiAgentes 4 Skills 2, Julio 2026 | Primera generación como archivo real. Anteriormente solo se referenciaba, nunca se había materializado. Consolida decisiones ya tomadas a lo largo de múltiples conversaciones. |
 | 1.1.0 | Julio 2026 | Actualizado a SIGMA v1.7. Migración del esquema de variantes de Full/Lite/Dev/Runtime a SIGMA-FE/LE/ME/HE con Dev/Runtime como submodos transversales. Unificación en un único repositorio (`PensadorZ/SIGMA`) — se retira la distinción entre repo de documentación y repo de código. Rutas de código actualizadas para reflejar la reestructuración dentro del paquete `sigma/` (`sigma/skills/`, `sigma/core/`, `sigma/hooks/`). Corregido nombre de carpeta de archivo histórico a `scripts/old_scripts_sigma/`. |
+| 1.2.0 | Julio 2026 | Se incorpora la fórmula Agente = Modelo + Arnés y se documenta el estado actual frente a los estándares de interoperabilidad (MCP, A2A, A2UI, AP2, UCP), verificados contra el curso "Vibecoding con Agentes Multiagente" (Google-Kaggle). Ningún componente del Hito 1 es un Agente A2A-compliant — es el Arnés que los precede, por diseño. |

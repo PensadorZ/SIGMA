@@ -10,6 +10,15 @@ respaldada por gobernanza explícita — memoria epistémica, contención de
 alucinaciones (`K ⊆ X`) y trazabilidad completa — en vez de convención
 tácita.
 
+Este documento consolida la construcción del **Arnés** de SIGMA durante
+el Hito 1 — en los términos del curso "Vibecoding con Agentes
+Multiagente" (Google-Kaggle, mayo 2026): Arquitectura del Arnés (Día 1),
+estándares de interoperabilidad (Día 2), especificación de Skills
+(Día 3), seguridad y evaluación de 7 dimensiones (Día 4), y desarrollo
+dirigido por especificación (Día 5). La capa de Agentes interoperables
+(Agent Cards, A2A) que el mismo curso describe es trabajo explícito del
+Hito 2 — ver AGENTS_CREATOR.md, Sección 9.
+
 Múltiples agentes especializados colaboran bajo una arquitectura de
 orquestación central triangular — la propuesta viene con la designación
 de tres orquestadores, Director/Auditor/Engineer (ver ADR-016), que
@@ -103,24 +112,90 @@ Matemática y Axiometría.
 
 ## Filosofía de diseño
 
-**Multiagente por diseño.** Cada responsabilidad — limpiar, calcular, validar,
-visualizar — la asume un agente especializado que colabora con los demás a
-través de interfaces explícitas y contratos Gherkin + LTL verificables.
+**Agente = Modelo + Arnés — nuevo paradigma de instrumentación de
+sistemas multiagentes.** Un modelo por sí solo no es un agente
+cabalgando en solitario sobre una ruma de datos: es, como lo hemos
+definido en todo el proyecto, un Ecosistema que se convierte en algo
+integrado cuando un arnés le da estado, ejecución de herramientas,
+ciclos de retroalimentación y restricciones exigibles. SIGMA es ese
+arnés — la decisión de construirlo antes que la funcionalidad vistosa
+(ver más abajo) no es casualidad, es la consecuencia directa de aplicar
+desde el inicio este nuevo cambio de paradigma.
 
-**Seguridad y gobernanza integradas.** No como complemento posterior, sino
-como capa estructural que envuelve cada paso: pre-commit hooks, Policy Server,
-equipos Red/Blue/Green, STRIDE modeling antes de implementar.
+**Multiagente por diseño.** Cada responsabilidad — limpiar, calcular,
+validar, visualizar — la asume un agente especializado que colabora con
+los demás a través de interfaces explícitas y contratos Gherkin + LTL
+verificables.
+
+**Seguridad y gobernanza integradas.** No como complemento posterior,
+sino como capa estructural que envuelve cada paso: pre-commit hooks,
+Policy Server, equipos Red/Blue/Green, STRIDE modeling antes de
+implementar.
 
 **Evaluación continua en 7 dimensiones.** Un resultado correcto no es
-suficiente: también debe ser eficiente, reproducible y fiel a la intención
-real del usuario, con pruebas avanzadas para alta incertidumbre.
+suficiente: también debe ser eficiente, reproducible y fiel a la
+intención real del usuario, con pruebas avanzadas para alta
+incertidumbre.
 
-**Stack adaptable por costo.** SIGMA puede ejecutarse en cuatro escalones de
-costo operativo (SIGMA-FE, gratuito, hasta SIGMA-HE, alto desempeño), cada
-uno operable además en submodo Dev o Runtime según el contexto de uso.
 
-**Contención epistémica K⊆X.** Todo agente solo puede afirmar lo que puede
-trazar hasta un dato observado. Ninguna alucinación puede filtrarse al output.
+**Interoperabilidad por reducción de complejidad**, no por acumulación de
+integraciones a medida. Conectar N modelos con M herramientas de
+forma directa exige O(N × M) puntos de integración — con 5 modelos y 10
+herramientas, 50 integraciones distintas que mantener, cada una capaz
+de romperse por separado. La alternativa estructural es una capa
+intermedia que reduce ese costo a O(N + M):
+
+
+```
+Integración directa:
+  [Modelo A] ── [Herramienta 1]
+  [Modelo B] ── [Herramienta 2]
+  [Modelo C] ── [Herramienta 3]
+  Esfuerzo: O(N × M)
+
+Integración con capa intermedia: (ej. MCP):
+  [Modelo A] ──┐
+  [Modelo B] ──┼── [Capa intermedia] ──┬── [Herramienta 1]
+  [Modelo C] ──┘                       ├── [Herramienta 2]
+                                       └── [Herramienta 3]
+  Esfuerzo: O(N + M)
+  
+  ```
+
+SIGMA ya aplica este mismo principio internamente, a nivel de código
+dentro de un solo skill (no entre modelos y herramientas externas, sino
+entre un skill y sus fuentes de configuración/ubicación física): el
+`ContextResolver` (ADR-006) es la capa intermedia entre cualquier skill
+y sus fuentes de configuración, y `_loader.py` (ADR-009) es la capa
+intermedia entre el ecosistema y la ubicación física de cada skill.
+Adoptar formalmente MCP como esa misma capa, pero para herramientas
+externas (ver AGENTS_CREATOR.md, Sección 9), es la extensión natural de
+un principio que el proyecto ya practica a menor escala, no una idea
+importada sin digerir.
+
+**Stack adaptable por costo.** SIGMA puede ejecutarse en cuatro
+escalones de costo operativo (SIGMA-FE, gratuito, hasta SIGMA-HE, alto
+desempeño), cada uno operable además en submodo Dev o Runtime según el
+contexto de uso.
+
+**Una alternativa open-source, que hace posible hasta los proyectos más
+pequeños.** SIGMA elige deliberadamente LangGraph (licencia MIT,
+autoalojable) como motor de orquestación en lugar de `google-adk`. Esta
+decisión no es solo técnica: es una postura de diseño. Las plataformas
+propietarias de las grandes compañías tecnológicas están, con razón,
+orientadas primero hacia su propia capitalización — su prioridad de
+negocio, que las hace en un punto determinado inalcanzables para
+pequeños presupuestos, estudiantes y personas curiosas incansables como
+yo. Eso significa que un desarrollador que solo cuenta con recursos
+limitados enfrenta una barrera de entrada real si el único camino
+disponible depende de esa infraestructura comercial. SIGMA apuesta por
+que la disciplina de gobernanza, seguridad y trazabilidad que este
+documento describe sea alcanzable con bajo costo operativo — sin que
+"accesible" signifique "menos riguroso".
+
+**Contención epistémica K⊆X.** Todo agente solo puede afirmar lo que
+puede trazar hasta un dato observado. Ninguna alucinación puede
+filtrarse al output.
 
 ---
 

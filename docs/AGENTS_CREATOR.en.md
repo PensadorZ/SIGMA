@@ -2,7 +2,7 @@
 
 **SIGMA v1.7 — Integrated System for Multi-Agent Management**
 Author: Prof. Marx Agustín García Delgado
-Version: 1.1.0
+Version: 1.2.0
 Repository: `PensadorZ/SIGMA` — single repository (code and documentation live together)
 
 ---
@@ -170,9 +170,31 @@ to that organization.
 
 ---
 
-## 9. Changelog
+## 9. Status against agent interoperability standards
+
+Consistent with SIGMA's philosophy of building governance before flashy
+functionality, Milestone 1 established the complete Harness (ADRs
+001-013) before addressing the agent interoperability layer. This table
+documents the real status of each standard today:
+
+| Standard | Role | Status in SIGMA |
+|---|---|---|
+| MCP | Connects models to tools/data | Not implemented — evaluated for Milestone 2 |
+| A2A | Agent-to-agent negotiation, Agent Cards | Not implemented — no current component has an Agent Card; a candidate for Director/Engineer/Auditor (ADR-016) |
+| A2UI | Secure generative interfaces | Not implemented — a candidate for Milestone 3's reactive dashboards (ADR-015) |
+| AP2 / UCP | Autonomous commerce between agents | Out of scope — SIGMA doesn't handle transactions |
+
+Neither any skill nor Milestone 1's orchestrator constitutes an
+"Agent" in the strict A2A sense: they are the orchestration logic and
+the functions the Harness coordinates. Formalizing this layer is
+explicit Milestone 2 work, not a Milestone 1 omission.
+
+---
+
+## 10. Changelog
 
 | Version | Date | Change |
 |---|---|---|
 | 1.0.0 | Eco MultiAgentes 4 Skills 2, July 2026 | First generation as a real file. Previously only referenced, never materialized. Consolidates decisions already made across multiple conversations. |
 | 1.1.0 | July 2026 | Updated to SIGMA v1.7. Migrated the variant scheme from Full/Lite/Dev/Runtime to SIGMA-FE/LE/ME/HE with Dev/Runtime as transversal submodes. Unified into a single repository (`PensadorZ/SIGMA`) — the split between a documentation repo and a code repo is retired. Code paths updated to reflect the restructuring inside the `sigma/` package (`sigma/skills/`, `sigma/core/`, `sigma/hooks/`). Corrected the historical-archive folder name to `scripts/old_scripts_sigma/`. |
+| 1.2.0 | July 2026 | Incorporates the Agent = Model + Harness formula and documents the real status against agent interoperability standards (MCP, A2A, A2UI, AP2, UCP), verified against the "Vibecoding with Multi-Agent Systems" course (Google-Kaggle). No Milestone 1 component is an A2A-compliant Agent — it's the Harness that precedes them, by design. |

@@ -1,5 +1,11 @@
 # SIGMA — Integrated System for Multi-Agent Management
 
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Tests](https://img.shields.io/badge/tests-65%2F65%20passing-brightgreen)
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![Hito](https://img.shields.io/badge/Hito%201-Completo-success)
+[![ORCID](https://img.shields.io/badge/ORCID-0009--0003--4849--3369-a6ce39?logo=orcid&logoColor=white)](https://orcid.org/0009-0003-4849-3369)
+
 > **SIGMA is not an answer. It's the system that learns to answer.**
 
 🇪🇸 [Versión en español disponible aquí](README.es.md)
