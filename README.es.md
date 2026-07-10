@@ -28,14 +28,43 @@ orquestadores (ver ADR-016) — para abordar proyectos en Ingeniería de
 Datos, Data Science, Análisis de Datos, Ingeniería General, Física,
 Matemática y Axiometría.
 
+## ✅ Verificado localmente
+
+El pipeline completo del Hito 1 corrió de extremo a extremo contra
+infraestructura Docker real y el dataset Tirendaz real (27.481 tweets):
+
+```
+0000-system-health-check   → success
+0001-data-ingestion        → success
+0002-data-cleanser         → success
+0003-data-preprocessor     → success_with_warnings
+0008-sentiment-analyzer    → success
+0011-viz-reporter          → success
+✓✓ Pipeline completado exitosamente
+```
+
+Suite de pruebas completa:
+
+```
+================================ 65 passed, 36 warnings in 20.80s ================================
+```
+
+> **Nota sobre la cobertura de pruebas:** los 65 tests incluyen tanto
+> pruebas unitarias completamente aisladas (con conectores simulados
+> para PostgreSQL/Redis) como pruebas de integración contra
+> infraestructura real. La evidencia más fuerte de corrección de
+> extremo a extremo no es el conteo de tests en sí, sino la corrida
+> completa del pipeline contra infraestructura Docker real mostrada
+> arriba (`warnings=[]`, los 6 skills en `status=success`).
+
 ## ✨ Características
 
-- 🧠 **Memoria epistémica** — Feature Store temporal + Grafo de Suposiciones que separa hechos verificados de hipótesis refutables (ADR-001)
-- 🔒 **Contención epistémica K ⊆ X** — ningún agente puede afirmar algo que no provenga de un dato observado (ADR-008)
-- 🛡️ **Seguridad automática Red/Blue/Green** — pre-vuelo adversarial, monitoreo AgBOM en tiempo real, y recuperación auditada (ADR-003)
-- ✅ **Aprobación humana con Vibe Diff** — cadena de custodia persistente en MinIO antes de cualquier acción de impacto medio o alto (ADR-004)
-- 📊 **Evaluación en 7 dimensiones** — intención, corrección, coste, calidad de código, trayectoria y autoreparación, no solo "pasa los tests" (ADR-007)
-- 🔍 **Trazabilidad completa en Langfuse V2** — cada decisión, cada llamada a herramienta, con degradación elegante si Langfuse cae (ADR-011)
+- 🧠 **Memoria epistémica** — Feature Store temporal + Grafo de Suposiciones que separa hechos verificados de hipótesis refutables ([ADR-001](docs/adr/adr-001-memoria-epistemica.md))
+- 🔒 **Contención epistémica K ⊆ X** — ningún agente puede afirmar algo que no provenga de un dato observado ([ADR-008](docs/adr/adr-008-restriccion-epistemica.md))
+- 🛡️ **Seguridad automática Red/Blue/Green** — pre-vuelo adversarial, monitoreo AgBOM en tiempo real, y recuperación auditada ([ADR-003](docs/adr/adr-003-equipo-3-colores.md))
+- ✅ **Aprobación humana con Vibe Diff** — cadena de custodia persistente en MinIO antes de cualquier acción de impacto medio o alto ([ADR-004](docs/adr/adr-004-vibe-diff-mfa.md))
+- 📊 **Evaluación en 7 dimensiones** — intención, corrección, coste, calidad de código, trayectoria y autoreparación, no solo "pasa los tests" ([ADR-007](docs/adr/adr-007-evaluacion-multidimensional.md))
+- 🔍 **Trazabilidad completa en Langfuse V2** — cada decisión, cada llamada a herramienta, con degradación elegante si Langfuse cae ([ADR-011](docs/adr/adr-011-trazabilidad-langfuse.md))
 - 🐳 **100% autoalojable en su variante gratuita** — SIGMA-FE corre completo en tu propia máquina, sin depender de ningún servicio de pago
 - 🔀 **4 escalones de costo** — de SIGMA-FE ($0) a SIGMA-HE (alto desempeño), cada uno operable en submodo Dev o Runtime
 
@@ -105,27 +134,6 @@ Guía completa, paso a paso, en [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECT
 | [AGENTS_CREATOR.md](docs/AGENTS_CREATOR.md) | Acta fundacional — contrato de todos los agentes |
 | [docs/adr/](docs/adr/) | 16 Architecture Decision Records |
 | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Incidentes reales encontrados y su solución exacta |
-
-## ✅ Verificado localmente
-
-El pipeline completo del Hito 1 corrió de extremo a extremo contra
-infraestructura Docker real y el dataset Tirendaz real (27.481 tweets):
-
-```
-0000-system-health-check   → success
-0001-data-ingestion        → success
-0002-data-cleanser         → success
-0003-data-preprocessor     → success_with_warnings
-0008-sentiment-analyzer    → success
-0011-viz-reporter          → success
-✓✓ Pipeline completado exitosamente
-```
-
-Suite de pruebas completa:
-
-================================ 
-65 passed, 36 warnings in 20.80s 
-================================
 
 
 ## 🏗️ Arquitectura

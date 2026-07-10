@@ -108,9 +108,7 @@ explícitamente el alcance de la entrega, y pregunta si no está claro:
 - **Un script puntual** — un solo archivo.
 - **Un grupo de scripts** — varios archivos relacionados, delimitados
   explícitamente por el operador.
-- **Un Skill completo** — los 7 artefactos canónicos de esa carpeta
-  específica (ver ADR-009), entregados juntos, no repartidos en mensajes
-  distintos.
+- **Un Skill completo** — los 7 artefactos canónicos de esa carpeta específica (ver [ADR-009](docs/adr/adr-009-especificacion-skills.md))
 
 Nunca se asume el alcance más conveniente para el agente — se pregunta
 cuando no es inequívoco.
@@ -119,7 +117,7 @@ cuando no es inequívoco.
 
 ## 5. Contrato técnico de cada skill
 
-Ver **ADR-009** para el detalle completo. Resumen: 7 archivos canónicos
+Ver [ADR-009](docs/adr/adr-009-especificacion-skills.md) para el detalle completo. Resumen: 7 archivos canónicos
 por skill (`SKILL.md`, `defaults.yaml`, `skill.py`, `references/schemas.md`,
 `evals/eval_adherencia.yaml`, `tests/test_{nombre}.feature`,
 `tests/test_000X_{nombre}.py`), `skill.py` cargado dinámicamente por ruta
@@ -136,7 +134,7 @@ todos los skills sin necesidad de importarlas explícitamente.
 
 ---
 
-## 6. Restricción epistémica K ⊆ X (ADR-008)
+## 6. Restricción epistémica K ⊆ X ([ADR-008](docs/adr/adr-008-restriccion-epistemica.md))
 
 Ningún skill infiere, imputa o completa información más allá de lo que sus
 datos de entrada u observación determinista permiten. La detección de
@@ -165,8 +163,8 @@ la intención final es comercialmente beneficiosa para esa organización.
 | Hito | Contenido |
 |---|---|
 | Hito 1 | Pipeline lineal LangGraph, 6 skills (0000-0003, 0008, 0011) — cerrado, 65/65 tests pasando |
-| Hito 2 | Arquitectura de 3 orquestadores con subgrafos (patrón Director/Engineer jerárquico, ADR-016), contexto inyectado de solo lectura al arrancar (nunca memoria mutable compartida en vivo) |
-| Hito 3 | Streaming en tiempo real (ADR-015), Hamilton Selector entre Kafka/Redis Streams/Faust |
+| Hito 2 | Arquitectura de tres orquestadores con subgrafos (patrón Director/Engineer jerárquico, [ADR-016](docs/adr/adr-016-orquestacion-jerarquica.md)), contexto inyectado de solo lectura al arrancar (nunca memoria mutable compartida en vivo) |
+| Hito 3 | Streaming en tiempo real [ADR-015](docs\adr\adr-015-hamilton-selector-streaming.md), Hamilton Selector entre Kafka/Redis Streams/Faust |
 | Hitos futuros (sin numerar) | Análisis financiero de tarjetahabientes (datos anonimizados/pseudonimizados), análisis de video/imagen, línea de seguridad bajo los límites de la sección 7 |
 
 ---
@@ -181,8 +179,8 @@ Esta tabla documenta el estado real de cada estándar hoy:
 | Estándar | Rol | Estado en SIGMA |
 |---|---|---|
 | MCP | Conecta modelos a herramientas/datos | No implementado — evaluado para Hito 2 |
-| A2A | Negociación agente-a-agente, Agent Cards | No implementado — ningún componente actual tiene Agent Card; candidato para Director/Engineer/Auditor (ADR-016) |
-| A2UI | Interfaces generativas seguras | No implementado — candidato para dashboards reactivos del Hito 3 (ADR-015) |
+| A2A | Negociación agente-a-agente, Agent Cards | No implementado — ningún componente actual tiene Agent Card; candidato para Director/Engineer/Auditor ([ADR-016](docs/adr/adr-016-orquestacion-jerarquica.md)) |
+| A2UI | Interfaces generativas seguras | No implementado — candidato para dashboards reactivos del Hito 3 [ADR-015](docs\adr\adr-015-hamilton-selector-streaming.md) |
 | AP2 / UCP | Comercio autónomo entre agentes | Fuera de alcance — SIGMA no gestiona transacciones |
 
 Ningún skill ni el orquestador del Hito 1 constituye un "Agente" A2A-

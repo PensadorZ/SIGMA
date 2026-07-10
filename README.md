@@ -25,16 +25,55 @@ orchestrators (see ADR-016) — to tackle projects in Data Engineering,
 Data Science, Data Analysis, General Engineering, Physics, Mathematics,
 and Axiometrics.
 
+## ✅ Verified locally
+
+```
+Milestone 1's full pipeline ran end to end against real Docker
+infrastructure and the real Tirendaz dataset (27,481 tweets):
+0000-system-health-check   → success
+0001-data-ingestion        → success
+0002-data-cleanser         → success
+0003-data-preprocessor     → success_with_warnings
+0008-sentiment-analyzer    → success
+0011-viz-reporter          → success
+✓✓ Pipeline completed successfully
+```
+
+Full test suite: 
+```
+================================ 65 passed, 36 warnings in 20.80s ================================
+```
+
+> **Note on test coverage:** the 65 tests include both fully isolated
+> unit tests (using simulated connectors for PostgreSQL/Redis) and
+> integration tests against real infrastructure. The strongest evidence
+> of end-to-end correctness isn't the test count itself, but the full
+> pipeline run against real Docker infrastructure shown above
+> (`warnings=[]`, all 6 skills `status=success`).
+
+
 ## ✨ Features
 
-- 🧠 **Epistemic memory** — temporal Feature Store + Assumption Graph separating verified facts from refutable hypotheses (ADR-001)
-- 🔒 **Epistemic containment K ⊆ X** — no agent can assert anything that doesn't trace back to an observed data point (ADR-008)
-- 🛡️ **Automated Red/Blue/Green security** — pre-flight adversarial testing, real-time AgBOM monitoring, and audited recovery (ADR-003)
-- ✅ **Human approval via Vibe Diff** — persistent chain of custody in MinIO before any medium- or high-impact action (ADR-004)
-- 📊 **7-dimension evaluation** — intent, correctness, cost, code quality, trajectory, and self-repair, not just "tests pass" (ADR-007)
-- 🔍 **Full traceability in Langfuse V2** — every decision, every tool call, with graceful degradation if Langfuse goes down (ADR-011)
+- 🧠 **Epistemic memory** — temporal Feature Store + Assumption Graph separating verified facts from refutable hypotheses ([ADR-001](docs/adr/adr-001-memoria-epistemica.en.md))
+- 🔒 **Epistemic containment K ⊆ X** — no agent can assert anything that doesn't trace back to an observed data point ([ADR-008](docs/adr/adr-008-restriccion-epistemica.en.md))
+- 🛡️ **Automated Red/Blue/Green security** — pre-flight adversarial testing, real-time AgBOM monitoring, and audited recovery ([ADR-003](docs/adr/adr-003-equipo-3-colores.en.md))
+- ✅ **Human approval via Vibe Diff** — persistent chain of custody in MinIO before any medium- or high-impact action ([ADR-004](docs/adr/adr-004-vibe-diff-mfa.en.md))
+- 📊 **7-dimension evaluation** — intent, correctness, cost, code quality, trajectory, and self-repair, not just "tests pass" ([ADR-007](docs/adr/adr-007-evaluacion-multidimensional.en.md))
+- 🔍 **Full traceability in Langfuse V2** — every decision, every tool call, with graceful degradation if Langfuse goes down ([ADR-011](docs/adr/adr-011-trazabilidad-langfuse.en.md))
 - 🐳 **100% self-hostable in its free variant** — SIGMA-FE runs entirely on your own machine, with no paid service dependency
 - 🔀 **4 cost tiers** — from SIGMA-FE ($0) to SIGMA-HE (high performance), each operable in Dev or Runtime submode
+
+## ❌ What SIGMA does NOT do
+
+- Does not eliminate hallucinations completely — it contains them
+  structurally (K ⊆ X) and makes violations detectable, not impossible.
+- Does not replace human validation for medium/high-impact actions —
+  it enforces it (Vibe Diff + HITL).
+- Does not guarantee LLM output accuracy — it guarantees traceability
+  of every claim back to an observed data point.
+- Does not yet work automatically on any dataset — Milestone 1's
+  pipeline is verified against Tirendaz-family sentiment data; broader
+  generalization is being actively tested (see below).
 
 ## Why SIGMA is different
 
@@ -99,24 +138,6 @@ Full step-by-step guide in [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.en.
 | [docs/adr/](docs/adr/) | 16 Architecture Decision Records |
 | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Real incidents found and their exact resolution |
 
-## ✅ Verified locally
-
-```
-Milestone 1's full pipeline ran end to end against real Docker
-infrastructure and the real Tirendaz dataset (27,481 tweets):
-0000-system-health-check   → success
-0001-data-ingestion        → success
-0002-data-cleanser         → success
-0003-data-preprocessor     → success_with_warnings
-0008-sentiment-analyzer    → success
-0011-viz-reporter          → success
-✓✓ Pipeline completed successfully
-```
-
-Full test suite:
-================================ 
-65 passed, 36 warnings in 20.80s 
-================================
 
 ## 🏗️ Architectur
 

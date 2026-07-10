@@ -286,6 +286,17 @@ Según la documentación oficial de Zulip, un Outgoing webhook **solo se
 dispara por `@-mención` del bot o por mensaje directo (DM)** — nunca por
 un mensaje plano en un stream/topic, aunque el bot esté suscrito a él.
 
+### Solución temporal — reanudar manualmente sin Zulip
+
+Mientras la cuenta del bot esté desactivada, usa
+`scripts/resume_hitl_manual.py` para aprobar o rechazar una pausa HITL
+sin depender del webhook. Edita `TRACE_ID` y `DECISION` dentro del
+script antes de correrlo:
+
+```cmd
+python scripts/resume_hitl_manual.py
+```
+
 ### Solución adoptada
 
 Las respuestas HITL se envían por DM al bot, no en el canal. Ver

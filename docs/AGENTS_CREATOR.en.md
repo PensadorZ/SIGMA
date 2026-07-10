@@ -108,10 +108,8 @@ scope of the delivery, and asks when it isn't clear:
 - **A single script** — one file.
 - **A group of scripts** — several related files, explicitly delimited
   by the operator.
-- **A complete Skill** — the 7 canonical artifacts for that specific
-  folder (see ADR-009), delivered together, not split across separate
+- **A complete Skill** — the 7 canonical artifacts for that specific folder (see [ADR-009](docs/adr/adr-009-especificacion-skills.en.md)), delivered together, not split across separate
   messages.
-
 The most convenient scope for the agent is never assumed — it's asked
 when it isn't unambiguous.
 
@@ -119,13 +117,7 @@ when it isn't unambiguous.
 
 ## 5. Technical contract for each skill
 
-See **ADR-009** for the full detail. Summary: 7 canonical files per
-skill (`SKILL.md`, `defaults.yaml`, `skill.py`, `references/schemas.md`,
-`evals/eval_adherencia.yaml`, `tests/test_{name}.feature`,
-`tests/test_000X_{name}.py`), `skill.py` loaded dynamically by file path
-(`sigma/skills/_loader.py`) due to the invalid-Python-identifier problem
-in hyphenated folders, and no hardcoded constant that `defaults.yaml`
-already declares as configurable.
+See [ADR-009](docs/adr/adr-009-especificacion-skills.en.md) for the full detail. Summary: 7 canonical files per skill (`SKILL.md`, `defaults.yaml`, `skill.py`, `references/schemas.md`, `evals/eval_adherencia.yaml`, `tests/test_{name}.feature`, `tests/test_000X_{name}.py`), `skill.py` loaded dynamically by file path (`sigma/skills/_loader.py`) due to the invalid-Python-identifier problem in hyphenated folders, and no hardcoded constant that `defaults.yaml` already declares as configurable.
 
 Every successful skill output explicitly includes `run_id` and
 `trace_id`, without exception.
@@ -136,7 +128,7 @@ explicit imports.
 
 ---
 
-## 6. Epistemic restriction K ⊆ X (ADR-008)
+## 6. Epistemic restriction K ⊆ X [ADR-008](docs/adr/adr-008-restriccion-epistemica.en.md)
 
 No skill infers, imputes, or fills in information beyond what its input
 data or deterministic observation allows. Detection of target columns,
@@ -164,8 +156,8 @@ to that organization.
 | Milestone | Content |
 |---|---|
 | Milestone 1 | Linear LangGraph pipeline, 6 skills (0000-0003, 0008, 0011) — closed, 65/65 tests passing |
-| Milestone 2 | Three-orchestrator architecture with subgraphs (hierarchical Director/Engineer pattern, ADR-016), read-only context injected at startup (never live mutable shared memory) |
-| Milestone 3 | Real-time streaming (ADR-015), Hamilton Selector among Kafka/Redis Streams/Faust |
+| Milestone 2 | Three-orchestrator architecture with subgraphs (hierarchical Director/Engineer pattern, [ADR-016](docs/adr/adr-016-orquestacion-jerarquica.en.md)), read-only context injected at startup (never live mutable shared memory) |
+| Milestone 3 | Real-time streaming [ADR-015](docs\adr\adr-015-hamilton-selector-streaming.en.md), Hamilton Selector among Kafka/Redis Streams/Faust |
 | Future milestones (unnumbered) | Financial analysis of cardholders (anonymized/pseudonymized data), video/image analysis, security work under the boundaries in section 7 |
 
 ---
@@ -180,8 +172,8 @@ documents the real status of each standard today:
 | Standard | Role | Status in SIGMA |
 |---|---|---|
 | MCP | Connects models to tools/data | Not implemented — evaluated for Milestone 2 |
-| A2A | Agent-to-agent negotiation, Agent Cards | Not implemented — no current component has an Agent Card; a candidate for Director/Engineer/Auditor (ADR-016) |
-| A2UI | Secure generative interfaces | Not implemented — a candidate for Milestone 3's reactive dashboards (ADR-015) |
+| A2A | Agent-to-agent negotiation, Agent Cards | Not implemented — no current component has an Agent Card; a candidate for Director/Engineer/Auditor [ADR-016](docs/adr/adr-016-orquestacion-jerarquica.en.md)|
+| A2UI | Secure generative interfaces | Not implemented — a candidate for Milestone 3's reactive dashboards [ADR-015](docs\adr\adr-015-hamilton-selector-streaming.en.md) |
 | AP2 / UCP | Autonomous commerce between agents | Out of scope — SIGMA doesn't handle transactions |
 
 Neither any skill nor Milestone 1's orchestrator constitutes an

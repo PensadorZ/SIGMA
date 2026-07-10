@@ -178,7 +178,12 @@ def run(state: PipelineState) -> SkillResult:
                     f"Columnas presentes: {list(df.columns)}.",
                     t["ms"],
                 )
-
+            # Renombrar a "text" — contrato interno de SIGMA. required_column
+            # es la flexibilidad de entrada (ADR-006); "text" es el nombre
+            # fijo que el resto del pipeline (incl. raw_data en PostgreSQL)
+            # espera, sin importar el dominio del dataset de origen.
+            if required_column != "text":
+                df = df.rename(columns={required_column: "text"})
             if "row_id" not in df.columns:
                 df["row_id"] = [f"row-{i}" for i in range(len(df))]
 

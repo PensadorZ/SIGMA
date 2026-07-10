@@ -55,3 +55,9 @@ data/raw/
 
 # Carpeta personal de aprendizaje - nunca se sube al repo publico
 Learning/
+
+outputs/*
+!outputs/.gitkeep
+!outputs/output_report.md
+!outputs/output_report.en.md
+!outputs/dashboard_run*.html

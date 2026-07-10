@@ -304,6 +304,17 @@ format) depending on its privacy setting
 (`email_address_visibility`), unrelated to the real email configured in
 `ZULIP_EMAIL`.
 
+### Temporary solution — resume manually without Zulip
+
+While the bot account is deactivated, use
+`scripts/resume_hitl_manual.py` to approve or reject an HITL pause
+without depending on the webhook. Edit `TRACE_ID` and `DECISION` inside
+the script before running it:
+
+```cmd
+python scripts/resume_hitl_manual.py
+```
+
 ### Fix
 
 Validate by `sender_id` (stable, always visible in the payload) instead

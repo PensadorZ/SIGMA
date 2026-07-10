@@ -26,7 +26,7 @@ ingestion:
   workers: "${SIGMA_INGESTION_WORKERS:-1}"
 
   # Columna mínima requerida en el archivo fuente.
-  required_column: "text"
+  required_column: "${SIGMA_INGESTION_REQUIRED_COLUMN:-text}"
 
   # Si el archivo no trae row_id, se genera uno sintético secuencial.
   generate_row_id_if_missing: true
