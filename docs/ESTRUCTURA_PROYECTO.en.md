@@ -2,7 +2,7 @@
 
 **SIGMA v1.7 · Post-restructuring into the `sigma/` package**
 Author: Prof. Marx Agustín García Delgado · Version: 3.0.0
-Replaces version 2.0.0 — updated after the full restructuring of the
+Replaces version 3.0.0 — updated after the full restructuring of the
 code into the `sigma/` package (`sigma/core/`, `sigma/hooks/`,
 `sigma/skills/`), the recovery of `config.py`/`connections.py`/
 `tracing.py` inside `sigma/core/`, and the formal close of Milestone 1
@@ -19,7 +19,10 @@ sigma-hito1\
 ├── .env                          ← Real credentials (NEVER to Git)
 ├── .gitignore
 ├── LICENSE
-├── README.md
+├── README.md                     ← Repo entry point (English)
+├── README.es.md                  ← Spanish version of the README
+├── assets\
+│   └── sigma_banner.png          ← Logo banner, used in both READMEs
 ├── requirements.txt
 ├── pyproject.toml
 ├── policies.yaml                 ← Policy Server policies (security)
@@ -176,6 +179,16 @@ sigma-hito1\
 ```
 
 ---
+
+## Changes from version 3.0.0 of this document
+
+**README split into two files.** `README.md` is now the English
+version (GitHub's standard for a repo's entry point); `README.es.md`
+holds the Spanish version. Previously there was a single Spanish
+`README.md` with `README.en.md` as the translation — the order was reversed.
+
+**New `assets\` folder** at the root — holds the project's visual
+banner (`sigma_banner.png`), referenced from both READMEs.
 
 ## Changes from version 2.0.0 of this document
 
