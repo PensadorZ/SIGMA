@@ -320,6 +320,46 @@ python scripts/resume_hitl_manual.py
 Validate by `sender_id` (stable, always visible in the payload) instead
 of `sender_email`. New variable in `.env`: `ZULIP_OWNER_USER_ID`.
 
+
+## Incident 6 — Zulip "Account is deactivated" with a confirmed-active bot
+
+**Date:** July 10, 2026
+**Severity:** High — blocked notifications and HITL approvals for 4 days
+**Status:** Resolved
+
+### Symptom
+
+`webhook_receiver.py` and `orchestrator.py` consistently reported
+`401 UNAUTHORIZED — {"msg":"Account is deactivated"}` when trying to
+notify Zulip, even though the `chismosito2` bot showed as active
+(`is_active: true`) in the admin panel.
+
+### Root cause
+
+The `.env` file had `ZULIP_BOT_EMAIL` (and its corresponding
+`ZULIP_BOT_API_KEY`) **declared twice**. The second declaration —
+copied from a template or example in an earlier session, with the
+fictional bot `sigma-hito1-bot@sigma-2026.zulipchat.com` — silently
+overwrote the first (`python-dotenv`, like most `.env` loaders, uses
+the last declaration of a duplicated variable). The code had spent
+days authenticating against a bot that never existed, while the real
+bot (`chismosito2`) remained active and unused.
+
+### Fix
+
+Remove the duplicate second declaration of `ZULIP_BOT_EMAIL`/
+`ZULIP_BOT_API_KEY` in `.env`, keeping only the correct pair for the
+real bot. Verified with a direct call to `GET /api/v1/users/me`
+returning `200` and the bot's real data.
+
+### Lesson for `.env.example`
+
+Add an explicit comment warning that the `ZULIP_BOT_EMAIL`/
+`ZULIP_BOT_API_KEY` variables must never appear duplicated in the
+file, since a `.env` produces no syntax error from a repeated key —
+it fails silently, overwriting without any warning.
+
+
 ---
 
 ## Normal behaviors that look like bugs (but aren't)
