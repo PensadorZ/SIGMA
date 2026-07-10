@@ -1,7 +1,7 @@
 # SIGMA — Sistema Integrado para la Gestión Multiagente
 
 
-![alt text](<ChatGPT Image 9 jul 2026, 19_36_18.png>)
+![alt text](assets/sigma_banner.png)
 
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
