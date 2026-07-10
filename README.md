@@ -1,5 +1,7 @@
 # SIGMA — Integrated System for Multi-Agent Management
 
+![alt text](<ChatGPT Image 9 jul 2026, 19_36_18.png>)
+
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Tests](https://img.shields.io/badge/tests-65%2F65%20passing-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
@@ -22,6 +24,17 @@ orchestration architecture — Director/Auditor/Engineer, three
 orchestrators (see ADR-016) — to tackle projects in Data Engineering,
 Data Science, Data Analysis, General Engineering, Physics, Mathematics,
 and Axiometrics.
+
+## ✨ Features
+
+- 🧠 **Epistemic memory** — temporal Feature Store + Assumption Graph separating verified facts from refutable hypotheses (ADR-001)
+- 🔒 **Epistemic containment K ⊆ X** — no agent can assert anything that doesn't trace back to an observed data point (ADR-008)
+- 🛡️ **Automated Red/Blue/Green security** — pre-flight adversarial testing, real-time AgBOM monitoring, and audited recovery (ADR-003)
+- ✅ **Human approval via Vibe Diff** — persistent chain of custody in MinIO before any medium- or high-impact action (ADR-004)
+- 📊 **7-dimension evaluation** — intent, correctness, cost, code quality, trajectory, and self-repair, not just "tests pass" (ADR-007)
+- 🔍 **Full traceability in Langfuse V2** — every decision, every tool call, with graceful degradation if Langfuse goes down (ADR-011)
+- 🐳 **100% self-hostable in its free variant** — SIGMA-FE runs entirely on your own machine, with no paid service dependency
+- 🔀 **4 cost tiers** — from SIGMA-FE ($0) to SIGMA-HE (high performance), each operable in Dev or Runtime submode
 
 ## Why SIGMA is different
 
@@ -65,11 +78,17 @@ cd SIGMA
 cp .env.example .env
 # Edit .env with your real values
 docker compose up -d
+
+# Quick test — synthetic data generated internally, no real
+# infrastructure dependency, fast iteration:
 python orchestrator.py --variant Dev --data-path ./data/tirendaz.csv
+
+# Full run — real Tirendaz dataset (27,481 labeled tweets) against
+# real Docker infrastructure (PostgreSQL, Redis, MinIO, Langfuse):
+python orchestrator.py --variant Full --data-path ./data/tirendaz.csv
 ```
 
-Full step-by-step guide in [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.md)
-(project structure document — currently Spanish-only).
+Full step-by-step guide in [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.en.md).
 
 ## Documentation
 
@@ -80,6 +99,89 @@ Full step-by-step guide in [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.md)
 | [docs/adr/](docs/adr/) | 16 Architecture Decision Records |
 | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Real incidents found and their exact resolution |
 
+## ✅ Verified locally
+
+```
+Milestone 1's full pipeline ran end to end against real Docker
+infrastructure and the real Tirendaz dataset (27,481 tweets):
+0000-system-health-check   → success
+0001-data-ingestion        → success
+0002-data-cleanser         → success
+0003-data-preprocessor     → success_with_warnings
+0008-sentiment-analyzer    → success
+0011-viz-reporter          → success
+✓✓ Pipeline completed successfully
+```
+
+Full test suite:
+================================ 
+65 passed, 36 warnings in 20.80s 
+================================
+
+## 🏗️ Architectur
+
+```
+sigma-hito1/
+├── orchestrator.py          # LangGraph graph, pipeline entry point
+├── webhook_receiver.py      # Receives HITL responses from Zulip
+├── sigma/                   # Installable Python package
+│   ├── core/                # Config, connections, tracing, checkpointer, state
+│   ├── hooks/                # Zulip notifications
+│   └── skills/                # Milestone 1's 6 skills, each with:
+│       └── 000X-name/          SKILL.md, skill.py, defaults.yaml,
+│                                references/, evals/, tests/
+├── db/                      # PostgreSQL schema (7 tables)
+├── docs/
+│   ├── SIGMA_v1.7.md         # The Harness's founding document
+│   ├── AGENTS_CREATOR.md    # Agent governance contract
+│   └── adr/                  # 16 Architecture Decision Records
+└── tests/                   # Shared suite (65/65 passing)
+```
+
+See [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.en.md) for the
+full tree and folder-by-folder detail.
+
+## ⚠️ Known limitations
+
+With the same governance discipline that defines SIGMA, here are the
+real gaps in the current state — no gloss:
+
+- **The CLI still uses the previous variant scheme.**
+  `orchestrator.py --variant {Full,Lite,Dev,Runtime}` is still what's
+  live; migrating to the documented scheme (`SIGMA-FE/LE/ME/HE` +
+  `--submode`) was deliberately postponed to Milestone 2 to avoid
+  risking Milestone 1's verified 65-test suite.
+- **`INSTALL.md` and `PIPELINES.md` don't exist yet.** The step-by-step
+  install guide currently lives in
+  [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.en.md).
+- **Ngrok requires manual startup across two terminals.** The HITL flow
+  via Zulip needs `uvicorn` + `ngrok` running before launching the
+  pipeline — no startup automation yet. Thanks to Ngrok's free Dev
+  Domain (since January 2026), the URL stays fixed across restarts, but
+  the startup itself is still manual.
+- **No CI configured.** The 65/65 tests are verified locally; there's
+  no GitHub Actions workflow running the suite on every push yet.
+- **`0011`'s dashboard verification — completed.** The most recent Full
+  run confirmed a fixed sentiment palette, correctly grouped languages,
+  and zero warnings (`warnings=[]`). One minor open question remains:
+  the "Top engagement" axis shows generic row identifiers (`row-0`,
+  `row-1`) instead of a more descriptive value — to be confirmed
+  whether this is the final design or a pending adjustment.
+- **The Zulip bot only reacts to direct messages, never to
+  channel/topic messages** — this is Zulip's own platform behavior
+  (Outgoing webhooks fire exclusively on DM or @-mention), not a SIGMA
+  limitation. See `TROUBLESHOOTING.md`, Incident 4. Additionally, once
+  a bot's webhook URL is set, **Zulip doesn't allow editing it from the
+  UI** — creating a new bot is the only way to point to a different
+  endpoint.
+- **Zulip bot account intermittently deactivated** — root cause not
+  yet diagnosed; the pipeline doesn't fail because of this (graceful
+  degradation already verified, ADR-011), but notifications don't
+  arrive while the account is inactive.
+
+None of these gaps block using Milestone 1 as documented — they're
+honestly the ground left for Milestone 2.
+
 ## Project status
 
 Milestone 1 (Hito 1) complete: a 6-skill pipeline running end to end
@@ -89,3 +191,10 @@ design: three-level hierarchical orchestration (Director/Engineer).
 ## License
 
 [MIT](LICENSE)
+
+---
+
+<p align="center">
+Made with 🧠 and disciplined governance by
+<a href="https://orcid.org/0009-0003-4849-3369">Prof. Marx Agustín García Delgado</a>
+</p>
