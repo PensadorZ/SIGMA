@@ -57,6 +57,24 @@ Suite de pruebas completa:
 > completa del pipeline contra infraestructura Docker real mostrada
 > arriba (`warnings=[]`, los 6 skills en `status=success`).
 
+### 📊 Ejemplos de dashboards reales
+
+Los siguientes dashboards fueron generados por el pipeline real de
+SIGMA (`0011-viz-reporter`), no simulados ni armados a mano:
+
+**Tirendaz — corrida post-reestructuración** (línea base, `warnings=[]`)
+![Dashboard de Tirendaz](assets/dashboard_screenshots/dashboard_run4_tirendaz.png)
+
+**Reseñas de IMDb — prueba cross-domain** (texto largo, `warnings=[]`)
+![Dashboard de IMDb](assets/dashboard_screenshots/dashboard_run5_imdb.png)
+
+**Redes sociales 2026 — prueba cross-domain** (activó correctamente el disparador de calidad HITL)
+![Dashboard de redes sociales](assets/dashboard_screenshots/dashboard_run6_social.png)
+
+Dashboards interactivos completos: [`outputs/`](outputs/) (descarga y
+abre localmente — GitHub muestra el código HTML crudo, no la página
+renderizada). Metodología y hallazgos completos: [`output_report.md`](outputs/output_report.md)
+
 ## ✨ Características
 
 - 🧠 **Memoria epistémica** — Feature Store temporal + Grafo de Suposiciones que separa hechos verificados de hipótesis refutables ([ADR-001](docs/adr/adr-001-memoria-epistemica.md))

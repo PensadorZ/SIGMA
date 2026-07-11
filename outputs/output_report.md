@@ -52,6 +52,13 @@ corridas 1-4 documentan la evolución del Hito 1 sobre el dataset base
 (dos fallos diagnosticados y corregidos, luego dos éxitos antes y
 después de la reestructuración del código a `sigma/`).
 
+**Dataset:** `ibrahimqasimi/imdb-50k-cleaned-movie-reviews` — 5,000
+reseñas de películas (el nombre del dataset en Kaggle sugiere 50,000,
+pero el archivo real contiene 5,000 filas — verificado con
+`df.shape` tanto localmente como en el propio notebook de Kaggle),
+dominio: texto largo (cientos de palabras por fila), completamente
+distinto al de Twitter.
+
 ---
 
 ## Parte 1 — Las tres corridas, explicadas

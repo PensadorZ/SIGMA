@@ -16,6 +16,70 @@ with their own Kaggle datasets.
 
 ---
 
+### Local vs. MinIO dashboard persistence — by submode
+
+| Submode | Where the dashboard lands |
+|---|---|
+| `Dev` | Local file: `outputs/dashboards/{trace_id}/index.html` |
+| `Full` | MinIO only: `minio://dashboards/{trace_id}/index.html` — never written to local disk. Download it manually via the MinIO web console (`http://localhost:9003`, `dashboards` bucket) if you need a local copy. |
+
+This is why, of the 6 runs documented in this report, only the quick
+Dev-mode test automatically generated a folder inside
+`outputs/dashboards/` — runs 3 through 6 (all in Full mode) were
+downloaded manually from MinIO and renamed for this report.
+
+---
+
+## Navigation — HTML dashboards for every run
+
+| # | File | Dataset | Result |
+|---|---|---|---|
+| 1 | [dashboard_run1_failed.html](dashboard_run1_failed.html) | Tirendaz (Yasserh) | ❌ Failed — see `TROUBLESHOOTING.md` |
+| 2 | [dashboard_run2_failed.html](dashboard_run2_failed.html) | Tirendaz (Yasserh) | ❌ Failed — see `TROUBLESHOOTING.md` |
+| 3 | [dashboard_run3_ok.html](dashboard_run3_ok.html) | Tirendaz (Yasserh) | ✅ Success, pre-`sigma/` restructuring |
+| 4 | [dashboard_run4_ok.html](dashboard_run4_ok.html) | Tirendaz (Yasserh) | ✅ Success, post-restructuring, `warnings=[]` |
+| 5 | [dashboard_run5_imdb_ok.html](dashboard_run5_imdb_ok.html) | IMDb 50K Reviews | ✅ Success, `warnings=[]` — see Test 2 above |
+| 6 | [dashboard_run6_social_ok_warnings.html](dashboard_run6_social_ok_warnings.html) | Social Media 2026 | ✅ Success with warnings — see Test 3 above |
+
+> **Note:** if you're looking for `test_dashboard_fix.html`, that file
+> is **not** a pipeline run — it's the output of a one-off verification
+> of `0011-viz-reporter`'s rendering fix (see `TROUBLESHOOTING.md`). It
+> lives alongside its script at
+> [`tests/test_dashboard_fix.html`](../tests/test_dashboard_fix.html),
+> not in this folder.
+
+Detailed analysis of runs 5 and 6 (the cross-domain generalization
+tests) is in Part 1 of this document. Runs 1-4 document Milestone 1's
+evolution on the baseline dataset (two diagnosed-and-fixed failures,
+then two successes before and after the code restructuring into `sigma/`).
+
+## Navigation — HTML dashboards for every run
+
+| # | File | Dataset | Result |
+|---|---|---|---|
+| 1 | [dashboard_run1_failed.html](dashboard_run1_failed.html) | Tirendaz (Yasserh) | ❌ Failed — see `TROUBLESHOOTING.md` |
+| 2 | [dashboard_run2_failed.html](dashboard_run2_failed.html) | Tirendaz (Yasserh) | ❌ Failed — see `TROUBLESHOOTING.md` |
+| 3 | [dashboard_run3_ok.html](dashboard_run3_ok.html) | Tirendaz (Yasserh) | ✅ Success, pre-`sigma/` restructuring |
+| 4 | [dashboard_run4_ok.html](dashboard_run4_ok.html) | Tirendaz (Yasserh) | ✅ Success, post-restructuring, `warnings=[]` |
+| 5 | [dashboard_run5_imdb_ok.html](dashboard_run5_imdb_ok.html) | IMDb 50K Reviews | ✅ Success, `warnings=[]` — see Test 2 above |
+| 6 | [dashboard_run6_social_ok_warnings.html](dashboard_run6_social_ok_warnings.html) | Social Media 2026 | ✅ Success with warnings — see Test 3 above |
+
+> **Note:** if you're looking for `test_dashboard_fix.html`, that file
+> is **not** a pipeline run — it's the output of a one-off verification
+> of `0011-viz-reporter`'s rendering fix (see `TROUBLESHOOTING.md`). It
+> lives alongside its script at
+> [`tests/test_dashboard_fix.html`](../tests/test_dashboard_fix.html),
+> not in this folder.
+
+Detailed analysis of runs 5 and 6 (the cross-domain generalization
+tests) is in Part 1 of this document. Runs 1-4 document Milestone 1's
+evolution on the baseline dataset (two diagnosed-and-fixed failures,
+then two successes before and after the code restructuring into `sigma/`).
+
+---
+
+---
+
 ## Part 1 — The three runs, explained
 
 ### Test 1 — Tirendaz / Yasserh (Milestone 1 baseline)
@@ -99,44 +163,6 @@ unique text per row.
 
 ---
 
-### Local vs. MinIO dashboard persistence — by submode
-
-| Submode | Where the dashboard lands |
-|---|---|
-| `Dev` | Local file: `outputs/dashboards/{trace_id}/index.html` |
-| `Full` | MinIO only: `minio://dashboards/{trace_id}/index.html` — never written to local disk. Download it manually via the MinIO web console (`http://localhost:9003`, `dashboards` bucket) if you need a local copy. |
-
-This is why, of the 6 runs documented in this report, only the quick
-Dev-mode test automatically generated a folder inside
-`outputs/dashboards/` — runs 3 through 6 (all in Full mode) were
-downloaded manually from MinIO and renamed for this report.
-
----
-
-## Navigation — HTML dashboards for every run
-
-| # | File | Dataset | Result |
-|---|---|---|---|
-| 1 | [dashboard_run1_failed.html](dashboard_run1_failed.html) | Tirendaz (Yasserh) | ❌ Failed — see `TROUBLESHOOTING.md` |
-| 2 | [dashboard_run2_failed.html](dashboard_run2_failed.html) | Tirendaz (Yasserh) | ❌ Failed — see `TROUBLESHOOTING.md` |
-| 3 | [dashboard_run3_ok.html](dashboard_run3_ok.html) | Tirendaz (Yasserh) | ✅ Success, pre-`sigma/` restructuring |
-| 4 | [dashboard_run4_ok.html](dashboard_run4_ok.html) | Tirendaz (Yasserh) | ✅ Success, post-restructuring, `warnings=[]` |
-| 5 | [dashboard_run5_imdb_ok.html](dashboard_run5_imdb_ok.html) | IMDb 50K Reviews | ✅ Success, `warnings=[]` — see Test 2 above |
-| 6 | [dashboard_run6_social_ok_warnings.html](dashboard_run6_social_ok_warnings.html) | Social Media 2026 | ✅ Success with warnings — see Test 3 above |
-
-> **Note:** if you're looking for `test_dashboard_fix.html`, that file
-> is **not** a pipeline run — it's the output of a one-off verification
-> of `0011-viz-reporter`'s rendering fix (see `TROUBLESHOOTING.md`). It
-> lives alongside its script at
-> [`tests/test_dashboard_fix.html`](../tests/test_dashboard_fix.html),
-> not in this folder.
-
-Detailed analysis of runs 5 and 6 (the cross-domain generalization
-tests) is in Part 1 of this document. Runs 1-4 document Milestone 1's
-evolution on the baseline dataset (two diagnosed-and-fixed failures,
-then two successes before and after the code restructuring into `sigma/`).
-
----
 
 ## Part 2 — How to reproduce these tests with your own Kaggle dataset
 
