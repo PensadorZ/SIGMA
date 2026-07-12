@@ -1,7 +1,7 @@
 ---
 id: ADR-016
 titulo: Orquestación Jerárquica de Tres Orquestadores (Director/Engineer/Auditor)
-version: 1.3
+version: 1.1
 estado: Propuesto
 fecha-original: 2026-07
 fecha-revision: 2026-07
@@ -13,25 +13,6 @@ nombre-archivo: adr-016-orquestacion-jerarquica.md
 ---
 
 # ADR-016: Orquestación Jerárquica de Tres Orquestadores (Director/Engineer/Auditor)
-
-## Resumen ejecutivo de cambios v1.3
-
-Se corrige un hueco real detectado al preparar el código de Rollout 1:
-`0008-sentiment-analyzer` y `0011-viz-reporter` — los dos skills con
-código real y tests pasando desde Hito 1 — no aparecían asignados a
-ningún Engineer en la Fig. 1 ni en la Tab. 2. Se reasignan a Engineer
-Datos, que pasa a cubrir `0000-0004, 0008, 0011`. Sin esta corrección,
-el Director de Rollout 1 no habría podido ejecutar análisis de
-sentimiento ni generar el dashboard — el resultado visible de correr
-SIGMA.
-
-## Resumen ejecutivo de cambios v1.2
-
-Se añade la sección 2.4 con el plan de implementación por Rollouts (1/2/3),
-resolviendo la ambigüedad de secuencia que la v1.1 dejaba implícita. Cada
-Rollout declara su condición de salida verificable y sus dependencias de
-código real pendientes, evitando que la jerarquía completa se dé por
-construida cuando en realidad solo un subgrafo existe.
 
 ## Resumen ejecutivo de cambios v1.1
 
@@ -110,14 +91,13 @@ Hito 1:
                        │
         ┌──────────────┼──────────────────┐
         ▼              ▼                  ▼
-ENGINEER DATOS       ENGINEER MODELOS   ENGINEER AUDITOR
-(subgrafo 1)         (subgrafo 2)       (subgrafo 3)
-skills:              skills:            skills:
-0000-0004, 0008,     0005-0007,         0012-0015
-0011                 0009-0010          (inspector,
-(pipeline batch      (trainers ML/DL,    explainability,
- core + sentimiento   HITL avanzado)     auditoría)
- + dashboard)
+ENGINEER DATOS   ENGINEER MODELOS   ENGINEER AUDITOR
+(subgrafo 1)     (subgrafo 2)       (subgrafo 3)
+skills:          skills:            skills:
+0000-0004        0005-0007,         0012-0015
+(pipeline        0009-0010          (inspector,
+ batch core)     (trainers ML/DL,    explainability,
+                  HITL avanzado)     auditoría)
 ```
 
 Cada Engineer es un **subgrafo LangGraph completo** con su propio
@@ -148,30 +128,6 @@ Reglas no negociables:
    Engineers emiten eventos AgBOM como cualquier worker.
 4. La restricción K ⊆ X (ADR-008) y el protocolo de siete artefactos
    (ADR-009 v1.5) aplican sin excepciones dentro de cada subgrafo.
-
-### 2.4 — Plan de implementación por Rollouts
-
-El Director nunca conoce Engineers que aún no existen — en Rollout 1, su
-lógica de enrutamiento solo contempla un destino posible. Esto evita
-construir código de coordinación especulativo para Engineers que todavía
-no están escritos, coherente con la restricción K⊆X (ADR-008) aplicada al
-propio diseño del sistema, no solo a los datos que procesa.
-
-**Tab. 2 — Rollouts de la jerarquía de tres orquestadores**
-
-| Rollout | Se construye | Skills pendientes de verificar en código real | Condición de salida |
-|---|---|---|---|
-| **Rollout 1** | Director mínimo viable + subgrafo Engineer Datos (`0000-0004, 0008, 0011`) | `0004-statistical-validator` — spec corregida (v1.0.1), `skill.py` sin confirmar. `0000-0003, 0008, 0011` ya tienen código real y tests pasando desde Hito 1 | (a) Suite pytest-bdd de Engineer Datos en verde completa, incluyendo `0008` y `0011` · (b) 3 corridas reales consecutivas sin fallo vía Director, no solo 1 · (c) circuit breaker probado explícitamente: al menos 1 corrida con fallo no recuperable forzado, verificando fast-fail correcto · (d) traza Langfuse completa: trace padre (Director) + span hijo (Engineer Datos) verificado end-to-end, incluyendo el evento `viz-reporter.success` |
-| **Rollout 2** | Se añade Engineer Modelos como segundo subgrafo | `0005-framework-selector`, `0006-ml-trainer`, `0007-dl-trainer`, `0009-cluster-analyzer`, `0010-engagement-calculator` — todos ⬜ pendientes, ninguno con código | (a) Engineer Modelos pasa su propia suite aislada, sin el Director, antes de conectarse · (b) contrato de entrada Engineer Datos → Engineer Modelos probado explícitamente (output de Datos consumible sin transformación manual) · (c) al menos 1 corrida real con los dos Engineers coordinados · (d) se verifica en vivo la regla no negociable de la sección 2.3: un fallo en Engineer Modelos no derriba a Engineer Datos |
-| **Rollout 3** | Se añade Engineer Auditor, jerarquía completa | `0012-code-reviewer`, `0013-skill-discovery`, `0014-stride-modeling`, `0015-pipeline-inspector` — todos pendientes; `0015` además requiere resolver su alcance (LLM sobre Langfuse vs. query engine sobre Redis) antes de escribir su SKILL.md | (a) Engineer Auditor pasa su suite aislada · (b) los 3 Engineers coordinados producen la evaluación 7D completa (ADR-007) generada por el Director · (c) ADR-017 (sandboxing, pendiente de redactar) debe estar aprobado y aplicado a Engineer Auditor antes de esta fase, porque la auditoría es el punto con mayor probabilidad de disparar generación dinámica de skills (ADR-014) |
-
-**Nota sobre ADR-017:** el sandboxing existía en las iteraciones previas del
-proyecto (contenedores efímeros Docker/gVisor) pero no sobrevivió a la
-consolidación en los 16 ADRs actuales. Se redacta como ADR nuevo, no como
-extensión de ADR-003, porque su alcance — contención de la *ejecución* de
-código generado — es ortogonal a la detección de amenazas que ADR-003 ya
-cubre; forzarlo dentro de ADR-003 mezclaría dos responsabilidades distintas
-bajo un mismo documento.
 
 ---
 
@@ -204,7 +160,6 @@ bajo un mismo documento.
 | ADR-011 | Trace padre en el Director; un span hijo por subgrafo Engineer |
 | ADR-013 | La trayectoria auditable incluye las decisiones de asignación del Director |
 | ADR-015 | El grafo de streaming del Hito 3 se integrará como subgrafo par |
-| ADR-017 (pendiente) | El sandboxing de ejecución se vuelve condición de entrada a Rollout 3, donde el riesgo de generación dinámica de skills (ADR-014) sin contención es más alto |
 
 ---
 
@@ -224,17 +179,3 @@ bajo un mismo documento.
 Este es el primer registro de este ADR. La decisión de diseño fue aprobada
 verbalmente en "Eco MultiAgentes 5 Skills 3" y quedó pendiente de
 formalización documental hasta esta versión.
-
-**Cambios en v1.2:**
-- **a** Se añade la sección 2.4, Plan de implementación por Rollouts
-  (1/2/3), resolviendo la secuencia de construcción que v1.1 dejaba
-  implícita. Cada Rollout declara condición de salida verificable y
-  skills pendientes de código real.
-- **b** Se añade nota cruzada a ADR-017 (sandboxing, pendiente de
-  redactar), requerido como condición de entrada a Rollout 3.
-
-**Cambios en v1.3:**
-- **a** Se corrige la Fig. 1 y la Tab. 2: `0008-sentiment-analyzer` y
-  `0011-viz-reporter` no estaban asignados a ningún Engineer. Se
-  reasignan a Engineer Datos (`0000-0004, 0008, 0011`), preservando el
-  pipeline funcional heredado de Hito 1 sin reestructurarlo.
