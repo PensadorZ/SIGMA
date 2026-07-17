@@ -1,0 +1,110 @@
+# =============================================================================
+# skills/0004-statistical-validator/evals/eval_adherencia.yaml
+# SIGMA v1.5 · Hito 2, Engineer Datos
+# Autor: Prof. Marx Agustín García Delgado
+# Versión: 1.0.0
+# =============================================================================
+# D6 (Calidad de trayectoria, ADR-007) + verificación de adherencia
+# estructural. Formato dimensional D1-D5 alineado con el patrón ya
+# establecido en 0000-system-health-check.
+# =============================================================================
+
+eval_id: "eval-0004-adherencia"
+skill_id: "0004"
+skill_name: "statistical-validator"
+version: "1.0.0"
+evaluator: "deterministic"
+
+dimensions:
+  - id: D1
+    name: "Corrección funcional"
+    checks:
+      - id: D1-C1
+        description: "verdict APPROVED_WITH_WARNINGS solo puede provenir de la rama adf_granger"
+        assertion: |
+          IF output.verdict == 'APPROVED_WITH_WARNINGS'
+          THEN output.branch == 'adf_granger'
+        severity: critical
+        skip_if: "result.status == 'error'"
+      - id: D1-C2
+        description: "verdict REJECTED solo puede provenir de la rama leakage_correlation"
+        assertion: |
+          IF output.verdict == 'REJECTED'
+          THEN output.branch == 'leakage_correlation'
+        severity: critical
+        skip_if: "result.status == 'error'"
+      - id: D1-C3
+        description: "Modo B (drift) siempre usa ks_test, nunca PSI (ADR-001 v1.4)"
+        assertion: |
+          IF output.branch == 'drift_ks_test'
+          THEN output.detail.method == 'ks_test'
+        severity: critical
+        skip_if: "result.status == 'error'"
+
+  - id: D2
+    name: "Consistencia del veredicto contra el umbral aplicado"
+    checks:
+      - id: D2-C1
+        description: "Bayes Factor por debajo del umbral nunca produce PAUSED_HITL ni APPROVED_WITH_WARNINGS"
+        assertion: |
+          IF output.branch == 'bayes_factor' AND output.statistic < output.detail.threshold
+          THEN output.verdict == 'INSUFFICIENT_EVIDENCE'
+        severity: critical
+        skip_if: "result.status == 'error'"
+      - id: D2-C2
+        description: "drift_detected=false implica INSUFFICIENT_EVIDENCE, nunca PAUSED_HITL"
+        assertion: |
+          IF output.branch == 'drift_ks_test' AND output.detail.drift_detected == false
+          THEN output.verdict == 'INSUFFICIENT_EVIDENCE'
+        severity: critical
+        skip_if: "result.status == 'error'"
+
+  - id: D3
+    name: "Seguridad y contención epistémica (K ⊆ X, ADR-008)"
+    checks:
+      - id: D3-C1
+        description: "output está vacío cuando status es error (contrato make_error de _common.py)"
+        assertion: "IF result.status == 'error' THEN result.output == {}"
+        severity: high
+      - id: D3-C2
+        description: "detail nunca contiene texto narrativo interpretativo, solo valores numéricos y de configuración"
+        assertion: "all(isinstance(v, (int, float, bool, str, dict)) for v in output.detail.values()) AND no_narrative_keys_like('reason', 'explanation', 'because')"
+        severity: high
+        skip_if: "result.status == 'error'"
+      - id: D3-C3
+        description: "umbral de Modo A ausente en policies.yaml produce PolicyConfigurationError, nunca un valor asumido"
+        assertion: "result.error_type == 'PolicyConfigurationError' when threshold missing"
+        severity: critical
+
+  - id: D4
+    name: "Trazabilidad (ADR-011)"
+    checks:
+      - id: D4-C1
+        description: "run_id y trace_id presentes en todo output exitoso"
+        assertion: |
+          output.run_id is not None AND output.trace_id is not None
+        severity: high
+        skip_if: "result.status == 'error'"
+      - id: D4-C2
+        description: "eventos start/branch_selected/success/error se emiten con trace_id explícito (tracing.py exige trace_id obligatorio)"
+        assertion: "every emit_trace_event call includes trace_id != None"
+        severity: high
+
+  - id: D5
+    name: "Selección estructural, no semántica (ADR-008)"
+    checks:
+      - id: D5-C1
+        description: "_select_branch decide solo por presencia/ausencia de claves, nunca por el contenido de los datos"
+        assertion: "no llamada a modelo, no inspección de valores de texto dentro de _select_branch"
+        severity: critical
+        note: "Verificado por lectura de código, no por assertion runtime automatizable."
+
+thresholds:
+  critical_pass_rate: 1.00
+  high_pass_rate: 0.85
+
+output:
+  format: "json"
+  destination: "evals/results/0004-statistical-validator/{trace_id}.json"
+  emit_to_langfuse: true
+  langfuse_event: "eval.adherencia.0004"

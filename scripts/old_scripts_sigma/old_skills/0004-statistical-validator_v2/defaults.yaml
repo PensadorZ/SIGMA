@@ -1,0 +1,32 @@
+# =============================================================================
+# skills/0004-statistical-validator/defaults.yaml
+# SIGMA v1.5 · Hito 2, Engineer Datos
+# Autor: Prof. Marx Agustín García Delgado
+# Versión: 1.0.0
+# =============================================================================
+# Solo configuracion no sensible (ADR-006). Los umbrales de decision
+# (drift, leakage, y los de Modo A) viven exclusivamente en policies.yaml
+# raiz (ADR-001 v1.4) -- nunca aqui, para que cambiar un umbral no
+# requiera tocar el paquete versionado del skill.
+# =============================================================================
+
+# defaults.yaml — 0004-statistical-validator
+# ADR-006: solo configuración no sensible. Los umbrales de decisión
+# (drift, leakage, y los pendientes de Modo A) viven exclusivamente en
+# policies.yaml (ADR-001 v1.4) — nunca aquí.
+
+bayes_factor:
+  prior: "${SIGMA_BF_PRIOR:-uniform}"
+
+permutation_bootstrap:
+  n_resamples: "${SIGMA_PERMUTATION_RESAMPLES:-10000}"
+  random_seed: "${SIGMA_RANDOM_SEED:-42}"
+
+adf_granger:
+  max_lag: "${SIGMA_GRANGER_MAX_LAG:-5}"
+
+bayesian_ab:
+  n_arms_min: "${SIGMA_MAB_MIN_ARMS:-2}"
+
+descriptive_fallback:
+  null_ratio_warn: "${SIGMA_DESC_NULL_WARN:-0.30}"

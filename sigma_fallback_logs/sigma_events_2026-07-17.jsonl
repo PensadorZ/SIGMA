@@ -1,0 +1,45 @@
+{"event": "test.fix_verificado", "trace_id": "trace-prueba-006", "timestamp": "2026-07-17T03:58:36.107063+00:00"}
+{"event": "test.fix_verificado", "trace_id": "trace-prueba-006", "timestamp": "2026-07-17T04:03:36.418608+00:00"}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-001", "timestamp": "2026-07-17T04:12:27.387581+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-002", "timestamp": "2026-07-17T04:12:28.245569+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-003", "timestamp": "2026-07-17T04:12:28.328785+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-004", "timestamp": "2026-07-17T04:12:28.402030+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-005", "timestamp": "2026-07-17T04:12:28.536572+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-006", "timestamp": "2026-07-17T04:12:28.666867+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-007", "timestamp": "2026-07-17T04:12:28.781578+00:00", "mode": "drift", "dev_mode": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-008", "timestamp": "2026-07-17T04:12:28.860155+00:00", "mode": "leakage", "dev_mode": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-009", "timestamp": "2026-07-17T04:12:29.001619+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-010", "timestamp": "2026-07-17T04:12:29.097714+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-011", "timestamp": "2026-07-17T04:12:29.178777+00:00", "mode": "significance", "dev_mode": true}
+{"event": "0004-statistical-validator.branch_selected", "trace_id": "wc-sv-011", "timestamp": "2026-07-17T04:12:29.180159+00:00", "branch": "descriptive_fallback"}
+{"event": "0004-statistical-validator.success", "trace_id": "wc-sv-011", "timestamp": "2026-07-17T04:12:29.186515+00:00", "verdict": "INSUFFICIENT_EVIDENCE", "branch": "descriptive_fallback", "statistic": null, "p_value": null, "duration_ms": 16}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-001", "timestamp": "2026-07-17T04:22:04.406147+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.branch_selected", "trace_id": "wc-sv-001", "timestamp": "2026-07-17T04:22:04.409670+00:00", "branch": "bayes_factor"}
+{"event": "0004-statistical-validator.success", "trace_id": "wc-sv-001", "timestamp": "2026-07-17T04:22:04.422306+00:00", "verdict": "INSUFFICIENT_EVIDENCE", "branch": "bayes_factor", "statistic": 9.65384297440863, "p_value": null, "duration_ms": 16}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-002", "timestamp": "2026-07-17T04:22:04.458869+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.branch_selected", "trace_id": "wc-sv-002", "timestamp": "2026-07-17T04:22:04.459925+00:00", "branch": "adf_granger"}
+{"event": "0004-statistical-validator.success", "trace_id": "wc-sv-002", "timestamp": "2026-07-17T04:22:04.859885+00:00", "verdict": "APPROVED_WITH_WARNINGS", "branch": "adf_granger", "statistic": -5.908399283594084, "p_value": 2.674585254229935e-07, "duration_ms": 405}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-003", "timestamp": "2026-07-17T04:22:04.868649+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.branch_selected", "trace_id": "wc-sv-003", "timestamp": "2026-07-17T04:22:04.869657+00:00", "branch": "permutation_bootstrap"}
+{"event": "0004-statistical-validator.success", "trace_id": "wc-sv-003", "timestamp": "2026-07-17T04:22:05.092971+00:00", "verdict": "PAUSED_HITL", "branch": "permutation_bootstrap", "statistic": -11.984992494880466, "p_value": 0.2385761423857614, "duration_ms": 219}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-004", "timestamp": "2026-07-17T04:22:05.114292+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.branch_selected", "trace_id": "wc-sv-004", "timestamp": "2026-07-17T04:22:05.119338+00:00", "branch": "bayesian_ab"}
+{"event": "0004-statistical-validator.success", "trace_id": "wc-sv-004", "timestamp": "2026-07-17T04:22:05.121517+00:00", "verdict": "INSUFFICIENT_EVIDENCE", "branch": "bayesian_ab", "statistic": null, "p_value": null, "duration_ms": 0}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-005", "timestamp": "2026-07-17T04:22:05.130390+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.branch_selected", "trace_id": "wc-sv-005", "timestamp": "2026-07-17T04:22:05.131389+00:00", "branch": "descriptive_fallback"}
+{"event": "0004-statistical-validator.success", "trace_id": "wc-sv-005", "timestamp": "2026-07-17T04:22:05.140565+00:00", "verdict": "INSUFFICIENT_EVIDENCE", "branch": "descriptive_fallback", "statistic": null, "p_value": null, "duration_ms": 16}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-006", "timestamp": "2026-07-17T04:22:05.161200+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.branch_selected", "trace_id": "wc-sv-006", "timestamp": "2026-07-17T04:22:05.162272+00:00", "branch": "bayes_factor"}
+{"event": "0004-statistical-validator.error", "trace_id": "wc-sv-006", "timestamp": "2026-07-17T04:22:05.164266+00:00", "error_type": "PolicyConfigurationError", "recoverable": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-007", "timestamp": "2026-07-17T04:22:05.178655+00:00", "mode": "drift", "dev_mode": false}
+{"event": "0004-statistical-validator.success", "trace_id": "wc-sv-007", "timestamp": "2026-07-17T04:22:05.187633+00:00", "verdict": "PAUSED_HITL", "branch": "drift_ks_test", "statistic": 1.0, "p_value": 1.860340365603627e-23, "duration_ms": 16}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-008", "timestamp": "2026-07-17T04:22:05.195842+00:00", "mode": "leakage", "dev_mode": false}
+{"event": "0004-statistical-validator.success", "trace_id": "wc-sv-008", "timestamp": "2026-07-17T04:22:05.201628+00:00", "verdict": "REJECTED", "branch": "leakage_correlation", "statistic": 0.9999995809427863, "p_value": null, "duration_ms": 15}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-009", "timestamp": "2026-07-17T04:22:05.208690+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.error", "trace_id": "wc-sv-009", "timestamp": "2026-07-17T04:22:05.210072+00:00", "error_type": "InputSchemaError", "recoverable": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-010", "timestamp": "2026-07-17T04:22:05.221587+00:00", "mode": "significance", "dev_mode": false}
+{"event": "0004-statistical-validator.branch_selected", "trace_id": "wc-sv-010", "timestamp": "2026-07-17T04:22:05.222604+00:00", "branch": "bayes_factor"}
+{"event": "0004-statistical-validator.error", "trace_id": "wc-sv-010", "timestamp": "2026-07-17T04:22:05.224077+00:00", "error_type": "InsufficientSampleSizeError", "recoverable": false}
+{"event": "0004-statistical-validator.start", "trace_id": "wc-sv-011", "timestamp": "2026-07-17T04:22:05.234922+00:00", "mode": "significance", "dev_mode": true}
+{"event": "0004-statistical-validator.branch_selected", "trace_id": "wc-sv-011", "timestamp": "2026-07-17T04:22:05.235431+00:00", "branch": "descriptive_fallback"}
+{"event": "0004-statistical-validator.success", "trace_id": "wc-sv-011", "timestamp": "2026-07-17T04:22:05.237448+00:00", "verdict": "INSUFFICIENT_EVIDENCE", "branch": "descriptive_fallback", "statistic": null, "p_value": null, "duration_ms": 0}

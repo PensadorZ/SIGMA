@@ -6,15 +6,6 @@ Langfuse V2). Implementa la política de último recurso: si Langfuse no
 está disponible, los eventos se encolan en Redis; si Redis tampoco
 está disponible, se escriben en archivos de log local con rotación
 diaria. El pipeline nunca falla por indisponibilidad de Langfuse.
-
-CORRECCIÓN (Hito 2, verificada con consulta directa a la base de datos
-real de Langfuse — 360 observations guardadas, solo 6 traces): llamar a
-client.event(trace_id=...) directamente, sin haber creado antes el
-trace vía client.trace(id=...), guarda la observation pero deja
-huérfana la fila correspondiente en la tabla `traces`. La UI de
-Langfuse lista desde `traces`, no desde `observations` — por eso nunca
-aparecía nada en la interfaz pese a que los datos sí llegaban al
-servidor (confirmado con HTTP 201 y verificación directa en Postgres).
 """
 
 from __future__ import annotations
@@ -95,12 +86,11 @@ class TraceBackend:
 
         if self._langfuse_available and self._langfuse_client is not None:
             try:
-                # trace(id=...) hace upsert: crea la fila en `traces` si no
-                # existe, o la actualiza si ya existe — barato y seguro
-                # llamarlo en cada evento del mismo trace_id. Sin esto, la
-                # observation queda huérfana (ver nota de corrección arriba).
-                trace = self._langfuse_client.trace(id=trace_id)
-                trace.event(name=event_name, metadata=enriched)
+                self._langfuse_client.event(
+                    name=event_name,
+                    metadata=enriched,
+                    trace_id=trace_id,
+                )
                 return "langfuse"
             except Exception as exc:  # noqa: BLE001
                 logger.warning("Fallo al emitir a Langfuse (%s). Probando Redis.", exc)
