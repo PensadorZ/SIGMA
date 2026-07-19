@@ -1,4 +1,4 @@
-# SIGMA — Sistema Integrado para la Gestión Multiagente
+# SIGMA — Sistema Integrado para la Gestión Multiagente (Hito 1)
 
 
 ![alt text](assets/sigma_banner.png)
