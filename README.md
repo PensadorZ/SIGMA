@@ -1,4 +1,4 @@
-# SIGMA — Integrated System for Multi-Agent Management
+# SIGMA — Integrated System for Multi-Agent Management Milestone 1
 
 ![alt text](assets/sigma_banner.png)
 
