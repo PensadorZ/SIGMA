@@ -1,8 +1,18 @@
 # =============================================================================
 # sigma/core/skill_runner.py
-# SIGMA v1.5 · Hito 2, Rollout 1
+# SIGMA v1.5 · Hito 2, Rollout 1 (cerrado)
 # Autor: Prof. Marx Agustín García Delgado
-# Versión: 1.1.0
+# Versión: 1.2.0
+# =============================================================================
+# NOTA v1.2.0 — FIX de duration_ms (detectado al cerrar Rollout 1):
+# run_skill() confiaba ciegamente en el duration_ms autorreportado por
+# cada skill.py. Se detectó que 0003 y 0011 reportaban 0ms pese a que el
+# reloj real (timestamps del log) mostraba 7s y 52s respectivamente — no
+# se confirmó la causa exacta dentro de esos dos archivos, pero el
+# defecto de arquitectura sí se corrige aquí: run_skill() ahora mide su
+# propio tiempo real y lo usa como autoridad, con una advertencia si
+# difiere mucho del autorreportado (señal de que ese skill.py específico
+# tiene un bug en dónde abre/cierra su propio timer()).
 # =============================================================================
 # Extraído de orchestrator.py (Hito 1, v1.1.0) — _run_skill, _should_retry
 # y _emit_langfuse vivían ahí sin ningún módulo compartido. Engineer
@@ -90,12 +100,24 @@ def emit_langfuse(trace_id: str, event_name: str, fields: dict[str, Any]) -> Non
     log.debug("[tracing] evento '%s' procesado por backend=%s", event_name, backend_used)
 
 
+
+
 def run_skill(skill_id: str, skill_fn: Any, state: PipelineState) -> PipelineState:
     """
     Ejecutor genérico de skills con circuit breaker integrado.
     Cada nodo del grafo (de cualquier Engineer) llama a esta función
-    pasando su skill_fn. Comportamiento idéntico al de orchestrator.py
-    v1.1.0 — extracción, no reescritura.
+    pasando su skill_fn.
+
+    CORREGIDO (Hito 2): antes confiaba ciegamente en el duration_ms que
+    cada skill.py autorreportaba desde su propio timer() — se detectó
+    que ese valor venía sistemáticamente en 0ms para 0003 y 0011 pese a
+    que el reloj real (comparando timestamps del log) mostraba 7s y 52s
+    respectivamente. No se pudo confirmar la causa exacta dentro de esos
+    dos skill.py sin verlos de nuevo, pero el defecto de arquitectura sí
+    es corregible aquí: skill_runner.py ahora mide su PROPIO tiempo real
+    alrededor de la llamada, y ese valor sobrescribe el autorreportado —
+    nunca se vuelve a confiar en una medición que otro componente puede
+    haber calculado mal, cuando este módulo puede medirla directamente.
     """
     log.info("[pipeline] ▶ Iniciando skill %s", skill_id)
     emit_langfuse(state["trace_id"], f"{skill_id}.node_start", {
@@ -121,10 +143,21 @@ def run_skill(skill_id: str, skill_fn: Any, state: PipelineState) -> PipelineSta
                 error_type=error_type,
                 error_detail=str(exc),
                 error_category="unknown",
-                duration_ms=int((time.monotonic() - t0) * 1000),
+                duration_ms=0,  # se sobrescribe abajo con la medición real
                 retries_attempted=attempt - 1,
             )
             log.exception("[pipeline] Excepción inesperada en skill %s", skill_id)
+
+        real_duration_ms = int((time.monotonic() - t0) * 1000)
+        self_reported_ms = result.get("duration_ms", 0)
+        if abs(real_duration_ms - self_reported_ms) > 500:
+            log.warning(
+                "[skill_runner] skill=%s duration_ms autorreportado (%dms) "
+                "difiere del reloj real (%dms) — usando el real. Revisar "
+                "dónde empieza/termina timer() dentro de ese skill.py.",
+                skill_id, self_reported_ms, real_duration_ms,
+            )
+        result["duration_ms"] = real_duration_ms
 
         if result["status"] in ("success", "success_with_warnings"):
             log.info(

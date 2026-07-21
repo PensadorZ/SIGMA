@@ -1,6 +1,11 @@
 # =============================================================================
-# requirements.txt — SIGMA Hito 1
-# SIGMA v1.7 · Autor: Prof. Marx Agustín García Delgado
+# requirements.txt — SIGMA Hito 2
+# SIGMA v2.4 (Carta de Fundación del Ecosistema) · Autor: Prof. Marx Agustín García Delgado
+# =============================================================================
+# Actualizado para Rollout 2 (Engineer Modelos) — la sección "Hito 1 /
+# Rollout 1" de abajo queda intacta, sin tocar versiones ya verificadas
+# contra la corrida real del 5 de julio de 2026. Lo nuevo va en su
+# propia sección al final, para no mezclar lo probado con lo nuevo.
 # =============================================================================
 # Uso:
 #   pip install -r requirements.txt
@@ -153,3 +158,16 @@ pytest-bdd
 # Dataset download — Kaggle API (KGAT token format, not classic kaggle.json)
 # -----------------------------------------------------------------------------
 kaggle
+
+# =============================================================================
+# Hito 2, Rollout 2 — Engineer Modelos (nuevo)
+# 0006-ml-trainer / 0007-dl-trainer: fine-tuning real con LoRA/QLoRA sobre
+# modelos de Hugging Face. MLflow cubre el versionado de experimentos y
+# modelos que Langfuse no cubre (traza decisiones de agentes, no
+# versiona modelos). NO se añade aquí chromadb/sentence-transformers/
+# locust — son Hito 3 prospectivo (ADR-022/023), instalarlos ahora sería
+# la misma sobre-ingeniería que el proyecto viene evitando desde Hito 1.
+# =============================================================================
+peft
+accelerate
+mlflow

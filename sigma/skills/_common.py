@@ -163,8 +163,16 @@ def get_required_env(key: str) -> str:
 
 
 def is_dev_mode(state: PipelineState) -> bool:
-    """Determina si el skill debe operar en modo Dev (datos sintéticos)."""
-    return state.get("sigma_variant", "Full") == "Dev"
+    """
+    Determina si el skill debe operar en modo Dev (datos sintéticos).
+
+    MIGRADO (Hito 2, cierre de Rollout 1): antes comparaba
+    state.get("sigma_variant", "Full") == "Dev" — mezclaba costo y
+    submodo en un solo campo. Ahora lee sigma_submode, separado de
+    sigma_variant (SIGMA-FE/LE/ME/HE), coherente con config.py (que ya
+    usaba este esquema desde antes de esta migración).
+    """
+    return state.get("sigma_submode", "Dev") == "Dev"
 
 
 # ---------------------------------------------------------------------------

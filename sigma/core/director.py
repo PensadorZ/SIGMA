@@ -59,6 +59,7 @@ class DirectorState(TypedDict):
     trace_id: str
     pipeline_run_id: str
     sigma_variant: str
+    sigma_submode: str
     data_path: str
 
     director_status: Literal["running", "success", "failed"]
@@ -78,12 +79,14 @@ def build_initial_director_state(
     trace_id: str,
     pipeline_run_id: str,
     sigma_variant: str,
+    sigma_submode: str,
     data_path: str,
 ) -> DirectorState:
     return DirectorState(
         trace_id=trace_id,
         pipeline_run_id=pipeline_run_id,
         sigma_variant=sigma_variant,
+        sigma_submode=sigma_submode,
         data_path=data_path,
         director_status="running",
         engineer_results={},
@@ -106,6 +109,7 @@ def _translate_to_engineer_datos_input(director_state: DirectorState) -> Pipelin
         trace_id=director_state["trace_id"],
         pipeline_run_id=director_state["pipeline_run_id"],
         sigma_variant=director_state["sigma_variant"],
+        sigma_submode=director_state["sigma_submode"],
         data_path=director_state["data_path"],
     )
 

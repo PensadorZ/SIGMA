@@ -1,14 +1,32 @@
 # =============================================================================
-# pipeline_state.py — Estado compartido del pipeline SIGMA Hito 1
-# SIGMA v1.5 · Eco MultiAgentes 3 Skills 1
+# pipeline_state.py — Estado compartido del pipeline SIGMA
+# SIGMA v1.5 · Eco MultiAgentes 3 Skills 1 (base) + Hito 2 (fix SkillId + migración variantes)
 # Autor: Prof. Marx Agustín García Delgado
-# Versión: 1.0.0
+# Versión: 1.2.0
 # =============================================================================
 # Este módulo define PipelineState, el objeto que LangGraph pasa de nodo
 # en nodo a lo largo del DAG. Cada skill lee del estado lo que necesita
 # y escribe su output antes de ceder el control al siguiente nodo.
 #
 # Aprobado en sesión de diseño — Decisión A confirmada por Marx García.
+#
+# NOTA v1.1.0 — FIX (Hito 2, Rollout 1, cierre acordado):
+# "0004" no estaba en SkillId ni en retry_counts de initial_state() pese
+# a que el skill 0004-statistical-validator ya tiene código real y suite
+# verde. Sin este fix, el circuit breaker de director.py no puede
+# rastrear reintentos de 0004 — detectado durante la construcción de la
+# suite completa de 0004, corregido aquí antes de escribir director.py.
+#
+# NOTA v1.2.0 — MIGRACIÓN DE VARIANTES (Hito 2, cierre de Rollout 1):
+# sigma_variant deja de mezclar costo y submodo en un solo campo
+# (Full/Lite/Dev/Runtime). Se separa en dos campos independientes,
+# coherente con config.py (que ya usaba este esquema desde antes sin
+# que pipeline_state.py lo reflejara — esa inconsistencia queda resuelta
+# aquí):
+#   sigma_variant: SIGMA-FE | SIGMA-LE | SIGMA-ME | SIGMA-HE  (costo)
+#   sigma_submode: Dev | Runtime                              (submodo)
+# is_dev_mode() en _common.py se actualiza en el mismo commit para leer
+# sigma_submode en vez de comparar sigma_variant == "Dev".
 # =============================================================================
 
 from __future__ import annotations
@@ -21,12 +39,15 @@ from typing import Any, Literal, Optional, TypedDict
 # ---------------------------------------------------------------------------
 
 SkillId = Literal[
-    "0000", "0001", "0002", "0003", "0008", "0011", "HANDLE_ERROR"
+    "0000", "0001", "0002", "0003", "0004", "0008", "0011", "HANDLE_ERROR"
 ]
 
 SkillStatus = Literal["success", "success_with_warnings", "error", "pending"]
 
 ErrorCategory = Literal["non_recoverable", "recoverable", "unknown"]
+
+SigmaVariant = Literal["SIGMA-FE", "SIGMA-LE", "SIGMA-ME", "SIGMA-HE"]
+SigmaSubmode = Literal["Dev", "Runtime"]
 
 
 class SkillResult(TypedDict):
@@ -71,10 +92,20 @@ class PipelineState(TypedDict):
     Permite agrupar múltiples runs del mismo pipeline en informes.
     """
 
-    sigma_variant: Literal["Full", "Lite", "Dev", "Runtime"]
+    sigma_variant: SigmaVariant
     """
-    Variante de SIGMA activa en este run. Determina qué stack se usa.
-    Full = self-hosted. Lite = cloud paid. Dev = local sintético.
+    Variante de COSTO activa en este run — SIGMA-FE ($0, autoalojado),
+    SIGMA-LE (bajo costo), SIGMA-ME (~50% pago), SIGMA-HE (alto
+    desempeño). Ya NO mezcla submodo — ver sigma_submode.
+    """
+
+    sigma_submode: SigmaSubmode
+    """
+    Submodo transversal, independiente de la variante de costo — Dev
+    (datos sintéticos, sin infraestructura real) o Runtime (producción
+    real). "SIGMA-FE en modo Dev" es la combinación usada a diario en
+    desarrollo; cualquier variante puede combinarse con cualquier
+    submodo.
     """
 
     data_path: str
@@ -165,7 +196,8 @@ class PipelineState(TypedDict):
 def initial_state(
     trace_id: str,
     pipeline_run_id: str,
-    sigma_variant: str,
+    sigma_variant: SigmaVariant,
+    sigma_submode: SigmaSubmode,
     data_path: str,
 ) -> PipelineState:
     """
@@ -176,7 +208,8 @@ def initial_state(
     Args:
         trace_id:        ID de trazabilidad Langfuse.
         pipeline_run_id: ID del run del pipeline.
-        sigma_variant:   Variante SIGMA activa ('Full', 'Dev', etc.).
+        sigma_variant:   Variante de costo ('SIGMA-FE', 'SIGMA-LE', etc.).
+        sigma_submode:   Submodo transversal ('Dev' o 'Runtime').
         data_path:       Ruta al dataset de entrada.
 
     Returns:
@@ -186,6 +219,7 @@ def initial_state(
         trace_id=trace_id,
         pipeline_run_id=pipeline_run_id,
         sigma_variant=sigma_variant,
+        sigma_submode=sigma_submode,
         data_path=data_path,
         current_skill="0000",
         pipeline_status="running",
@@ -196,6 +230,7 @@ def initial_state(
             "0001": 0,
             "0002": 0,
             "0003": 0,
+            "0004": 0,  # nuevo — Hito 2, Rollout 1 (fix v1.1.0)
             "0008": 0,
             "0011": 0,
         },
@@ -219,6 +254,9 @@ NON_RECOVERABLE_ERRORS: frozenset[str] = frozenset({
     "NoDataToAnalyzeError",
     "NoDataForVizError",
     "AllEnginesUnavailableError",
+    "InputSchemaError",              # nuevo — 0004 (Hito 2)
+    "InsufficientSampleSizeError",   # nuevo — 0004 (Hito 2)
+    "PolicyConfigurationError",      # nuevo — 0004 (Hito 2)
 })
 
 # Errores de infraestructura que pueden resolverse en segundos.

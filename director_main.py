@@ -35,7 +35,7 @@ log = logging.getLogger("sigma.director_main")
 
 from sigma.core.checkpointer import get_checkpointer
 from sigma.core.director import build_director_graph, build_initial_director_state
-from sigma.core.tracing import _get_backend, emit_trace_event
+from sigma.core.tracing import emit_trace_event
 
 
 def main() -> None:
@@ -44,21 +44,27 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Ejemplos:\n"
-            "  python director_main.py --variant Full --data-path ./data/tirendaz.csv\n"
-            "  python director_main.py --variant Dev  --data-path ./data/tirendaz.csv\n"
+            "  python director_main.py --variant SIGMA-FE --submode Runtime --data-path ./data/tirendaz.csv\n"
+            "  python director_main.py --variant SIGMA-FE --submode Dev     --data-path ./data/tirendaz.csv\n"
         ),
     )
-    # NOTA: se mantiene el esquema --variant {Full,Lite,Dev,Runtime} tal
-    # cual, sin migrar a SIGMA-FE/LE/ME/HE + --submode todavía — esa
-    # migración quedó agendada explícitamente para el cierre de Rollout 1,
-    # en el mismo commit que el fix de pipeline_state.py (ver Plan
-    # Operativo). Este archivo hereda la decisión de orchestrator.py
-    # v1.1.0 sin cambiarla por su cuenta.
+    # MIGRADO (Hito 2, cierre de Rollout 1): --variant ya no mezcla costo
+    # y submodo. orchestrator.py v1.1.0 (archivado) usaba
+    # --variant {Full,Lite,Dev,Runtime} como un solo eje — esa migración
+    # quedó pospuesta deliberadamente hasta ahora para no mezclarla con
+    # el fix de SkillId. Coherente con config.py, que ya usaba este
+    # esquema de dos ejes desde antes de que el CLI lo reflejara.
     parser.add_argument(
         "--variant",
-        choices=["Full", "Lite", "Dev", "Runtime"],
-        default="Full",
-        help="Variante SIGMA a usar (default: Full) — esquema pendiente de migrar, ver nota arriba",
+        choices=["SIGMA-FE", "SIGMA-LE", "SIGMA-ME", "SIGMA-HE"],
+        default="SIGMA-FE",
+        help="Variante de costo (default: SIGMA-FE — 100%% autoalojado, $0)",
+    )
+    parser.add_argument(
+        "--submode",
+        choices=["Dev", "Runtime"],
+        default="Dev",
+        help="Submodo transversal (default: Dev — datos sintéticos, sin infraestructura real)",
     )
     parser.add_argument(
         "--data-path",
@@ -77,6 +83,7 @@ def main() -> None:
     log.info("trace_id       : %s", trace_id)
     log.info("pipeline_run_id: %s", pipeline_run_id)
     log.info("sigma_variant  : %s", args.variant)
+    log.info("sigma_submode  : %s", args.submode)
     log.info("data_path      : %s", args.data_path)
     log.info("=" * 60)
 
@@ -84,6 +91,7 @@ def main() -> None:
         trace_id=trace_id,
         pipeline_run_id=pipeline_run_id,
         sigma_variant=args.variant,
+        sigma_submode=args.submode,
         data_path=args.data_path,
     )
 
@@ -112,8 +120,6 @@ def main() -> None:
         failed = final_state.get("failed_engineer_id", "desconocido")
         log.error("[resultado] ✗ Director fallido en Engineer %s", failed)
         raise SystemExit(1)
-    from sigma.core.tracing import _get_backend
-    _get_backend()._langfuse_client.flush()
 
 
 if __name__ == "__main__":

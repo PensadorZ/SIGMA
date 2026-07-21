@@ -12,8 +12,9 @@
 skill:
   id: "0000"
   name: "system-health-check"
-  version: "2.0.0"
-  sigma_variant: "${SIGMA_VARIANT:-Full}"
+  version: "2.1.0"
+  sigma_variant: "${SIGMA_VARIANT:-SIGMA-FE}"
+  sigma_submode: "${SIGMA_SUBMODE:-Dev}"
 
 # -----------------------------------------------------------------------------
 # Verificación de servicios
@@ -39,14 +40,22 @@ services:
 # -----------------------------------------------------------------------------
 # Variables de entorno críticas (ADR-010) — fallo inmediato si faltan
 # -----------------------------------------------------------------------------
+# CORREGIDO (Hito 2): esta lista estaba desincronizada del código real
+# desde el fix v2.0.1 de skill.py, que acepta DATABASE_URL como
+# alternativa a los 4 campos separados de PostgreSQL — skill.py nunca
+# leyó esta sección (CRITICAL_ENV_VARS está hardcodeado en el propio
+# código para MinIO; Postgres usa su propia función
+# _check_postgres_env_vars()). Queda aquí como documentación fiel a la
+# lógica real, no como configuración que el código consuma.
 critical_env_vars:
-  - POSTGRES_HOST
-  - POSTGRES_DB
-  - POSTGRES_USER
-  - POSTGRES_PASSWORD
-  - MINIO_ENDPOINT
-  - MINIO_ACCESS_KEY
-  - MINIO_SECRET_KEY
+  postgres:
+    # Se satisface con CUALQUIERA de los dos caminos, no ambos:
+    via_database_url: ["DATABASE_URL"]
+    via_split_fields: ["POSTGRES_HOST", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD"]
+  minio:
+    - MINIO_ENDPOINT
+    - MINIO_ACCESS_KEY
+    - MINIO_SECRET_KEY
 
 # -----------------------------------------------------------------------------
 # Trazabilidad Langfuse

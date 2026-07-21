@@ -1,13 +1,11 @@
 # SIGMA — Sistema Integrado para la Gestión Multiagente
 
-
 ![alt text](assets/sigma_banner.png)
-
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Tests](https://img.shields.io/badge/tests-65%2F65%20passing-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
-![Hito](https://img.shields.io/badge/Hito%201-Completo-success)
+![Milestone](https://img.shields.io/badge/Milestone%202-Rollout%201%20complete-success)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0003--4849--3369-a6ce39?logo=orcid&logoColor=white)](https://orcid.org/0009-0003-4849-3369)
 
 > **SIGMA no es una respuesta. Es el sistema que aprende a responder.**
@@ -19,32 +17,30 @@
 SIGMA es un ecosistema de agentes autónomos de código abierto para
 analizar, diseñar, calcular y decidir, construido mediante una
 metodología de desarrollo asistido por IA (*vibecoding*) y documentado
-desde su arquitectura hasta la resolución real de incidentes en
+desde su arquitectura hasta la resolución de incidentes reales en
 producción.
 
 Múltiples agentes especializados colaboran bajo una arquitectura de
-orquestación central triangular — Director/Auditor/Engineer, tres
-orquestadores (ver ADR-016) — para abordar proyectos en Ingeniería de
-Datos, Data Science, Análisis de Datos, Ingeniería General, Física,
-Matemática y Axiometría.
+orquestación central triangular — Director/Engineer/Auditor, tres
+orquestadores (ver ADR-016) — para abordar proyectos de Ingeniería de
+Datos, Ciencia de Datos, Análisis de Datos, Ingeniería General, Física,
+Matemáticas y Axiometría.
 
 ## ✅ Verificado localmente
 
-El pipeline completo del Hito 1 corrió de extremo a extremo contra
-infraestructura Docker real y el dataset Tirendaz real (27.481 tweets):
-
 ```
+El pipeline completo del Hito 1 corrió de principio a fin contra
+infraestructura Docker real y el dataset real de Tirendaz (27,481 tweets):
 0000-system-health-check   → success
 0001-data-ingestion        → success
 0002-data-cleanser         → success
 0003-data-preprocessor     → success_with_warnings
 0008-sentiment-analyzer    → success
 0011-viz-reporter          → success
-✓✓ Pipeline completado exitosamente
+✓✓ Pipeline completado con éxito
 ```
 
 Suite de pruebas completa:
-
 ```
 ================================ 65 passed, 36 warnings in 20.80s ================================
 ```
@@ -52,79 +48,107 @@ Suite de pruebas completa:
 > **Nota sobre la cobertura de pruebas:** los 65 tests incluyen tanto
 > pruebas unitarias completamente aisladas (con conectores simulados
 > para PostgreSQL/Redis) como pruebas de integración contra
-> infraestructura real. La evidencia más fuerte de corrección de
-> extremo a extremo no es el conteo de tests en sí, sino la corrida
-> completa del pipeline contra infraestructura Docker real mostrada
-> arriba (`warnings=[]`, los 6 skills en `status=success`).
+> infraestructura real. La evidencia más sólida de corrección
+> end-to-end no es el conteo de tests en sí, sino la corrida completa
+> del pipeline contra infraestructura Docker real que se muestra arriba
+> (`warnings=[]`, los 6 skills con `status=success`).
 
-### 📊 Ejemplos de dashboards reales
+**El Hito 2, Rollout 1 (orquestación jerárquica, ADR-016) está
+completo** — verificado contra las 4 condiciones de salida: suite
+pytest-bdd completa en verde (65/65, incluyendo
+`0004-statistical-validator`), 4+ corridas reales consecutivas sin
+fallo, circuit breaker verificado con un fallo no recuperable forzado
+(cero reintentos, fail rápido confirmado), y traza Langfuse completa
+verificada de extremo a extremo (trace padre + eventos hijo,
+confirmado directamente contra la base de datos). Ver
+[docs/adr/adr-016-orquestacion-jerarquica.md](docs/adr/adr-016-orquestacion-jerarquica.md)
+para el plan completo de Rollouts.
+
+### 📊 Ejemplos de dashboard en vivo
 
 Los siguientes dashboards fueron generados por el pipeline real de
-SIGMA (`0011-viz-reporter`), no simulados ni armados a mano:
+SIGMA (`0011-viz-reporter`), no simulados ni construidos a mano:
 
 **Tirendaz — corrida post-reestructuración** (línea base, `warnings=[]`)
-![Dashboard de Tirendaz](assets/dashboard_screenshots/dashboard_run4_tirendaz.png)
+![Tirendaz dashboard](assets/dashboard_screenshots/dashboard_run4_tirendaz.png)
 
-**Reseñas de IMDb — prueba cross-domain** (texto largo, `warnings=[]`)
-![Dashboard de IMDb](assets/dashboard_screenshots/dashboard_run5_imdb.png)
+**Reseñas de IMDb — prueba cross-dominio** (texto largo, `warnings=[]`)
+![IMDb dashboard](assets/dashboard_screenshots/dashboard_run5_imdb.png)
 
-**Redes sociales 2026 — prueba cross-domain** (activó correctamente el disparador de calidad HITL)
-![Dashboard de redes sociales](assets/dashboard_screenshots/dashboard_run6_social.png)
+**Social Media 2026 — prueba cross-dominio** (activó correctamente el gate de calidad HITL)
+![Social media dashboard](assets/dashboard_screenshots/dashboard_run6_social.png)
 
 Dashboards interactivos completos: [`outputs/`](outputs/) (descarga y
-abre localmente — GitHub muestra el código HTML crudo, no la página
-renderizada). Metodología y hallazgos completos: [`output_report.md`](outputs/output_report.md)
+abre localmente — GitHub muestra el HTML crudo, no la página renderizada).
+
 
 ## ✨ Características
 
 - 🧠 **Memoria epistémica** — Feature Store temporal + Grafo de Suposiciones que separa hechos verificados de hipótesis refutables ([ADR-001](docs/adr/adr-001-memoria-epistemica.md))
-- 🔒 **Contención epistémica K ⊆ X** — ningún agente puede afirmar algo que no provenga de un dato observado ([ADR-008](docs/adr/adr-008-restriccion-epistemica.md))
-- 🛡️ **Seguridad automática Red/Blue/Green** — pre-vuelo adversarial, monitoreo AgBOM en tiempo real, y recuperación auditada ([ADR-003](docs/adr/adr-003-equipo-3-colores.md))
-- ✅ **Aprobación humana con Vibe Diff** — cadena de custodia persistente en MinIO antes de cualquier acción de impacto medio o alto ([ADR-004](docs/adr/adr-004-vibe-diff-mfa.md))
-- 📊 **Evaluación en 7 dimensiones** — intención, corrección, coste, calidad de código, trayectoria y autoreparación, no solo "pasa los tests" ([ADR-007](docs/adr/adr-007-evaluacion-multidimensional.md))
-- 🔍 **Trazabilidad completa en Langfuse V2** — cada decisión, cada llamada a herramienta, con degradación elegante si Langfuse cae ([ADR-011](docs/adr/adr-011-trazabilidad-langfuse.md))
-- 🐳 **100% autoalojable en su variante gratuita** — SIGMA-FE corre completo en tu propia máquina, sin depender de ningún servicio de pago
-- 🔀 **4 escalones de costo** — de SIGMA-FE ($0) a SIGMA-HE (alto desempeño), cada uno operable en submodo Dev o Runtime
+- 🔒 **Contención epistémica K ⊆ X** — ningún agente puede afirmar algo que no rastree a un dato observado ([ADR-008](docs/adr/adr-008-restriccion-epistemica.md))
+- 🛡️ **Seguridad automatizada Red/Blue/Green** — pruebas adversariales previas al vuelo, monitoreo de AgBOM en tiempo real, y recuperación auditada ([ADR-003](docs/adr/adr-003-equipo-3-colores.md))
+- ✅ **Aprobación humana vía Vibe Diff** — cadena de custodia persistente en MinIO antes de cualquier acción de impacto medio o alto ([ADR-004](docs/adr/adr-004-vibe-diff-mfa.md))
+- 📊 **Evaluación de 7 dimensiones** — intención, corrección, costo, calidad de código, trayectoria y auto-reparación, no solo "los tests pasan" ([ADR-007](docs/adr/adr-007-evaluacion-multidimensional.md))
+- 🔍 **Trazabilidad completa en Langfuse V2** — cada decisión, cada llamada a herramienta, con degradación elegante si Langfuse falla ([ADR-011](docs/adr/adr-011-trazabilidad-langfuse.md))
+- 🐳 **100% autoalojable en su variante gratuita** — SIGMA-FE corre enteramente en tu propia máquina, sin dependencia de servicios de pago
+- 🔀 **4 niveles de costo** — desde SIGMA-FE ($0) hasta SIGMA-HE (alto rendimiento), cada uno operable en submodo Dev o Runtime
+- 🌳 **Orquestación jerárquica** — un Director coordina Engineers especializados (Datos, Modelos, Auditor), construidos por Rollouts verificados, no todos a la vez ([ADR-016](docs/adr/adr-016-orquestacion-jerarquica.md))
 
----
+## ❌ Lo que SIGMA NO hace
 
-## Por qué SIGMA es distinto
+- No elimina las alucinaciones por completo — las contiene
+  estructuralmente (K ⊆ X) y hace que las violaciones sean detectables,
+  no imposibles.
+- No reemplaza la validación humana para acciones de impacto
+  medio/alto — la exige (Vibe Diff + HITL).
+- No garantiza la precisión del output del LLM — garantiza la
+  trazabilidad de cada afirmación hasta un dato observado.
+- Todavía no funciona automáticamente sobre cualquier dataset — el
+  pipeline del Hito 1 está verificado contra datos de sentimiento de la
+  familia Tirendaz; la generalización más amplia se está probando
+  activamente (ver abajo).
 
-La mayoría de proyectos de agentes construyen primero una funcionalidad
-vistosa y añaden gobernanza después, si acaso. SIGMA se construyó al
-revés, deliberadamente: memoria epistémica, seguridad automática,
-gestión de secretos y contención de alucinaciones (`K ⊆ X`) existieron
-**antes** de que hubiera un solo dashboard que mostrar. Cada decisión
-arquitectónica está respaldada por un Architecture Decision Record (ADR)
-explícito — 16 hasta la fecha — no por convención tácita.
+## Por qué SIGMA es diferente
 
-## Escalones de costo
+La mayoría de los proyectos de agentes construyen primero
+funcionalidad vistosa y añaden gobernanza después, si acaso. SIGMA se
+construyó al revés, deliberadamente: la memoria epistémica, la
+seguridad automatizada, la gestión de secretos, y la contención de
+alucinaciones (`K ⊆ X`) existían **antes** de que hubiera un solo
+dashboard que mostrar. Cada decisión arquitectónica está respaldada por
+un Architecture Decision Record (ADR) explícito — 23 hasta la fecha,
+todos formalmente aceptados — no por convención tácita.
 
-SIGMA se adapta a cuatro niveles de presupuesto, del mismo stack
+## Niveles de costo
+
+SIGMA se adapta a cuatro niveles de presupuesto sobre el mismo stack
 arquitectónico:
 
 | Variante | Costo | Para quién |
 |---|---|---|
 | **SIGMA-FE** (Full Engineer) | $0 | Ingeniería propia, stack 100% autoalojado |
-| **SIGMA-LE** (Low-Cost Engineer) | Bajo | Servicios premontados esenciales |
-| **SIGMA-ME** (Medium-Cost Engineer) | ~50% pago | Equipos con presupuesto moderado |
-| **SIGMA-HE** (High-Cost Engineer) | Alto | Empresas que requieren alto desempeño |
+| **SIGMA-LE** (Low-Cost Engineer) | Bajo | Servicios esenciales ya construidos |
+| **SIGMA-ME** (Medium-Cost Engineer) | ~50% de pago | Equipos con presupuesto moderado |
+| **SIGMA-HE** (High-Cost Engineer) | Alto | Empresas que requieren alto rendimiento |
 
 Cada variante puede además operar en submodo **Dev** (depuración) o
-**Runtime** (producción con datos reales). Detalle completo en
-[SIGMA_v1.7.md](SIGMA_v1.7.md).
+**Runtime** (producción con datos reales) — un eje completamente
+independiente del costo, ej. `--variant SIGMA-FE --submode Dev`. Detalle
+completo en [SIGMA_v2.4.md](docs/SIGMA_v2.4.md), la carta de fundación
+del ecosistema (`SIGMA_v1.7.md` está archivado en `docs/Docs_hito1/`
+como registro histórico del Hito 1).
 
-## Requisitos previos
+## Prerrequisitos
 
 - Docker y Docker Compose
 - Python 3.12+
 - [Ngrok](https://ngrok.com/download) — expone el webhook HITL local a
   Zulip durante el desarrollo (no es un paquete Python, se instala y
-  ejecuta por separado)
-- Cuenta de Kaggle con token API (formato KGAT) — para descargar el
+  corre por separado)
+- Cuenta de Kaggle con token de API (formato KGAT) — para descargar el
   dataset de entrenamiento
 
-## Empezar
+## Primeros pasos
 
 ```bash
 git clone https://github.com/PensadorZ/SIGMA.git
@@ -135,139 +159,134 @@ docker compose up -d
 
 # Prueba rápida — datos sintéticos generados internamente, sin
 # dependencia de infraestructura real, iteración rápida:
-python orchestrator.py --variant Dev --data-path ./data/tirendaz.csv
+python director_main.py --variant SIGMA-FE --submode Dev --data-path ./data/tirendaz.csv
 
-# Corrida completa — dataset real Tirendaz (27.481 tweets etiquetados)
+# Corrida completa — dataset real de Tirendaz (27,481 tweets etiquetados)
 # contra infraestructura Docker real (PostgreSQL, Redis, MinIO, Langfuse):
-python orchestrator.py --variant Full --data-path ./data/tirendaz.csv
+python director_main.py --variant SIGMA-FE --submode Runtime --data-path ./data/tirendaz.csv
 ```
 
-Guía completa, paso a paso, en [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.md).
+### 🩹 Si el pipeline no corre — solución de problemas de Docker
+
+El bloqueo más común no es el código, es que Docker no está levantado.
+Antes que nada:
+
+```bash
+# 1. Asegúrate de que la aplicación Docker Desktop esté abierta y
+#    totalmente iniciada (su ícono en la bandeja deja de animarse
+#    cuando el motor está listo).
+
+# 2. Revisa qué contenedores existen y su estado:
+docker ps -a
+
+# 3. Si aparecen como "Exited" (postgres, langfuse_db, redis, minio,
+#    langfuse), inícialos directamente -- no los recrees:
+docker start sigma_postgres sigma_langfuse_db sigma_redis sigma_minio sigma_langfuse
+
+# 4. Confirma que los 5 estén "Up (healthy)" -- dale 10-15 segundos,
+#    especialmente a Postgres y Langfuse:
+docker ps
+
+# 5. Solo si los contenedores no existen en absoluto (clon nuevo, o
+#    Docker Desktop reinstalado), recréalos:
+docker compose up -d
+```
+
+Guía completa paso a paso en [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.md).
 
 ## Documentación
 
 | Documento | Qué encontrarás ahí |
 |---|---|
-| [SIGMA_v1.7.md](docs/SIGMA_v1.7.md) | Plan Maestro completo — arquitectura, variantes, roadmap |
-| [AGENTS_CREATOR.md](docs/AGENTS_CREATOR.md) | Acta fundacional — contrato de todos los agentes |
-| [docs/adr/](docs/adr/) | 16 Architecture Decision Records |
-| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Incidentes reales encontrados y su solución exacta |
+| [SIGMA_v2.4.md](docs/SIGMA_v2.4.md) | Carta de Fundación — arquitectura, variantes, roadmap, alineación de gobernanza |
+| [AGENTS_CREATOR.md](docs/AGENTS_CREATOR.md) | Carta fundacional — el contrato que todo agente sigue |
+| [docs/adr/](docs/adr/) | 23 Architecture Decision Records — ver [adr-README.md](docs/adr/adr-README.md) para el índice completo |
+| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Incidentes reales encontrados durante el Hito 1 y su resolución exacta |
+| [TROUBLESHOOTING_HITO2.md](docs/TROUBLESHOOTING_HITO2.md) | Incidentes reales encontrados desde el Hito 2 en adelante |
 
 
 ## 🏗️ Arquitectura
 
 ```
-sigma-hito1/
-├── orchestrator.py          # Grafo LangGraph, punto de entrada del pipeline
-├── webhook_receiver.py      # Recibe respuestas HITL desde Zulip
+sigma-hito2/
+├── director_main.py         # Punto de entrada -- reemplaza a orchestrator.py (Hito 1, archivado)
+├── webhook_receiver.py      # Recibe respuestas HITL de Zulip
 ├── sigma/                   # Paquete Python instalable
-│   ├── core/                # Config, conexiones, tracing, checkpointer, estado
-│   ├── hooks/                # Notificaciones Zulip
-│   └── skills/                # Los 6 skills del Hito 1, cada uno con:
+│   ├── core/                # Config, conexiones, tracing, checkpointer, state,
+│   │                         director.py, engineer_datos.py, skill_runner.py
+│   ├── hooks/                # Notificaciones de Zulip
+│   └── skills/                # Los 7 skills de Engineer Datos, cada uno con:
 │       └── 000X-nombre/        SKILL.md, skill.py, defaults.yaml,
 │                                references/, evals/, tests/
-├── db/                      # Esquema PostgreSQL (7 tablas)
+├── db/                      # Esquema de PostgreSQL (7 tablas)
 ├── docs/
-│   ├── SIGMA_v1.7.md         # Documento fundacional del Arnés
+│   ├── SIGMA_v2.4.md         # El documento fundacional del Arnés
 │   ├── AGENTS_CREATOR.md    # Contrato de gobernanza de agentes
-│   └── adr/                  # 16 Architecture Decision Records
+│   └── adr/                  # 23 Architecture Decision Records
 └── tests/                   # Suite compartida (65/65 pasando)
 ```
 
 Ver [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.md) para el árbol
-completo y el detalle de cada carpeta.
+completo y el detalle carpeta por carpeta.
 
 ## ⚠️ Limitaciones conocidas
 
-Con la misma disciplina de gobernanza que define a SIGMA, estas son las
-brechas reales del estado actual — sin maquillaje:
+Con la misma disciplina de gobernanza que define a SIGMA, aquí están
+los vacíos reales del estado actual — sin maquillaje:
 
-- **El CLI todavía usa el esquema de variantes anterior.**
-  `orchestrator.py --variant {Full,Lite,Dev,Runtime}` sigue vigente;
-  la migración al esquema documentado (`SIGMA-FE/LE/ME/HE` + submodo
-  `--submode`) se pospuso deliberadamente al Hito 2 para no arriesgar
-  la suite de 65 tests verificada del Hito 1.
-- **`INSTALL.md` y `PIPELINES.md` no existen todavía.** La guía de
+- **`INSTALL.md` y `PIPELINES.md` todavía no existen.** La guía de
   instalación paso a paso vive por ahora en
   [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.md).
 - **Ngrok requiere arranque manual en dos terminales.** El flujo HITL
   vía Zulip necesita `uvicorn` + `ngrok` corriendo antes de lanzar el
-  pipeline — no hay automatización de arranque todavía. Gracias al Dev
+  pipeline — todavía sin automatización de arranque. Gracias al Dev
   Domain gratuito de Ngrok (desde enero de 2026), la URL se mantiene
   fija entre reinicios, pero el arranque en sí sigue siendo manual.
-- **Sin CI configurado.** Los 65/65 tests se verifican localmente; no
-  hay GitHub Actions corriendo la suite en cada push todavía.
-- **Verificación del dashboard de `0011` — completada.** La corrida
-  más reciente en modo Full confirmó paleta de sentimiento fija,
-  idiomas agrupados correctamente, y cero advertencias
-  (`warnings=[]`). Queda una duda menor abierta: las etiquetas del
-  eje "Top engagement" muestran identificadores genéricos de fila
-  (`row-0`, `row-1`) en vez de un dato más descriptivo — por confirmar
-  si es el diseño final o un ajuste pendiente.
+- **Sin CI configurado.** Los 65/65 tests se verifican localmente;
+  todavía no hay un workflow de GitHub Actions que corra la suite en
+  cada push.
+- **Bug de auto-reporte de `duration_ms` en dos skills, mitigado, no
+  resuelto de raíz.** `0003-data-preprocessor` y `0011-viz-reporter`
+  auto-reportan `0ms` sin importar el tiempo real transcurrido;
+  `skill_runner.py` ahora mide el tiempo real de forma independiente y
+  ya no confía en el valor auto-reportado, así que esto no afecta la
+  corrección — pero el bug subyacente dentro de esos dos skills
+  todavía no se ha diagnosticado.
 - **El bot de Zulip solo reacciona a mensajes directos, nunca a
-  mensajes de canal/topic** — comportamiento propio de la plataforma
-  Zulip (los Outgoing webhooks solo se disparan por DM o @-mención), no
-  una limitación de SIGMA. Ver `TROUBLESHOOTING.md`, Incidente 4.
-  Además, una vez configurada la URL del webhook de un bot, **Zulip no
-  permite editarla desde la interfaz** — crear un bot nuevo es la única
-  forma de apuntar a un endpoint distinto.
-- **Cuenta del bot de Zulip desactivada intermitentemente** — causa
-  todavía no diagnosticada; el pipeline no falla por esto (degradación
-  elegante ya verificada, ADR-011), pero las notificaciones no llegan
-  mientras la cuenta esté inactiva.
+  mensajes de canal/tema** — este es el comportamiento propio de la
+  plataforma de Zulip (los webhooks salientes se disparan
+  exclusivamente por DM o @-mención), no una limitación de SIGMA. Ver
+  `TROUBLESHOOTING.md`, Incidente 4. Además, una vez que se configura
+  la URL del webhook de un bot, **Zulip no permite editarla desde la
+  UI** — crear un bot nuevo es la única forma de apuntar a un endpoint
+  distinto.
+- **La cuenta del bot de Zulip se desactiva intermitentemente** — causa
+  raíz sin diagnosticar todavía; el pipeline no falla por esto
+  (degradación elegante ya verificada, ADR-011), pero las
+  notificaciones no llegan mientras la cuenta está inactiva.
 
-Ninguna de estas brechas bloquea el uso del Hito 1 tal como está
-documentado — son honestamente el terreno que queda para el Hito 2.
-
-## ⚠️ Limitaciones conocidas
-
-Con la misma disciplina de gobernanza que define a SIGMA, estas son las
-brechas reales del estado actual — sin maquillaje:
-
-- **El CLI todavía usa el esquema de variantes anterior.**
-  `orchestrator.py --variant {Full,Lite,Dev,Runtime}` sigue vigente;
-  la migración al esquema documentado (`SIGMA-FE/LE/ME/HE` + submodo
-  `--submode`) se pospuso deliberadamente al Hito 2 para no arriesgar
-  la suite de 65 tests verificada del Hito 1.
-- **`INSTALL.md` y `PIPELINES.md` no existen todavía.** La guía de
-  instalación paso a paso vive por ahora en
-  [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.md).
-- **Ngrok requiere arranque manual en dos terminales.** El flujo HITL
-  vía Zulip necesita `uvicorn` + `ngrok` corriendo antes de lanzar el
-  pipeline — no hay automatización de arranque todavía. Gracias al Dev
-  Domain gratuito de Ngrok (desde enero de 2026), la URL se mantiene
-  fija entre reinicios, pero el arranque en sí sigue siendo manual.
-- **Sin CI configurado.** Los 65/65 tests se verifican localmente; no
-  hay GitHub Actions corriendo la suite en cada push todavía.
-- **Verificación del dashboard de `0011` — completada.** La corrida
-  más reciente en modo Full confirmó paleta de sentimiento fija,
-  idiomas agrupados correctamente, y cero advertencias
-  (`warnings=[]`). Queda una duda menor abierta: las etiquetas del
-  eje "Top engagement" muestran identificadores genéricos de fila
-  (`row-0`, `row-1`) en vez de un dato más descriptivo — por confirmar
-  si es el diseño final o un ajuste pendiente.
-- **El bot de Zulip solo reacciona a mensajes directos, nunca a
-  mensajes de canal/topic** — comportamiento propio de la plataforma
-  Zulip (los Outgoing webhooks solo se disparan por DM o @-mención), no
-  una limitación de SIGMA. Ver `TROUBLESHOOTING.md`, Incidente 4.
-  Además, una vez configurada la URL del webhook de un bot, **Zulip no
-  permite editarla desde la interfaz** — crear un bot nuevo es la única
-  forma de apuntar a un endpoint distinto.
-- **Cuenta del bot de Zulip desactivada intermitentemente** — causa
-  todavía no diagnosticada; el pipeline no falla por esto (degradación
-  elegante ya verificada, ADR-011), pero las notificaciones no llegan
-  mientras la cuenta esté inactiva.
-
-Ninguna de estas brechas bloquea el uso del Hito 1 tal como está
-documentado — son honestamente el terreno que queda para el Hito 2.
+Ninguno de estos vacíos bloquea el uso del pipeline tal como está
+documentado.
 
 ## Estado del proyecto
 
-Hito 1 completado: pipeline de 6 skills corriendo de extremo a extremo
-contra datos reales, con 65/65 pruebas automatizadas pasando. Para este caso,
-la salida del Pipeline está en MinIO; Es decir, el producto terminado debe buscarse
-dentro del dashboard que ha sido generado en MinIO. 
-El Hito 2 está en diseño: y tendrá mejoras para la entrega de las Ouputs, la orquestación de las distintatas tareas dentro del Pipeline será jerárquica de tres niveles (Director/Engineer/Auditor).
+Hito 1 completo: un pipeline de 6 skills corriendo de principio a fin
+contra datos reales, con 65/65 tests automatizados pasando. El output
+del pipeline vive en MinIO — el producto terminado debe buscarse en el
+dashboard generado ahí.
+
+**Hito 2 — Rollout 1 completo** (Director + Engineer Datos,
+`0000-0004, 0008, 0011`, ADR-016): arquitectura jerárquica de tres
+orquestadores (Director/Engineer Datos/Engineer Modelos/Engineer
+Auditor), construida en fases verificadas. Las 4 condiciones de salida
+cumplidas — suite de tests completa en verde, múltiples corridas reales
+consecutivas, circuit breaker verificado con un fallo forzado, y
+trazabilidad Langfuse confirmada de extremo a extremo. Esquema de
+variantes de costo migrado a `SIGMA-FE/LE/ME/HE` + submodo
+`Dev/Runtime` independiente en todo el código de Rollout 1.
+
+Siguen Rollout 2 (Engineer Modelos: `0005-0007, 0009-0010`) y Rollout 3
+(Engineer Auditor: `0012-0015`, gateado por el sandboxing de ADR-017).
 
 ## Licencia
 

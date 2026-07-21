@@ -21,7 +21,8 @@ class ServiceStatus(BaseModel):
 class HealthCheckOutput(BaseModel):
     trace_id: str
     run_id: str
-    sigma_variant: Literal["Full", "Lite", "Dev", "Runtime"]
+    sigma_variant: Literal["SIGMA-FE", "SIGMA-LE", "SIGMA-ME", "SIGMA-HE"]
+    sigma_submode: Literal["Dev", "Runtime"]
     verdict: Literal["HEALTHY", "DEGRADED", "BLOCKED"]
     verdict_reason: str
     services: list[ServiceStatus]

@@ -13,9 +13,13 @@ dev = [
     "pytest>=8.0",
     "pytest-bdd>=7.0",
 ]
+
 langfuse = [
-    "langfuse>=2.0",
-]
+    "langfuse>=2.0,<3",  # Techo <3: Langfuse SDK v4 es incompatible con el server self-hosted V2 (ver ADR-011)
+] 
+
+# Nota: Este cambio se generó porque había contradicciones con el langfuse que se está usando. Antes: - "langfuse>=2.0"    
+
 
 [tool.setuptools.packages.find]
 include = ["sigma*"]

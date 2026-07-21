@@ -33,6 +33,26 @@ policy_server:
       require_approval: ["write_prod_table", "deploy_netlify"]
 
   roles:
+    # Reconciliado con ADR-016 — "orchestrator" genérico se reemplaza
+    # por director (único punto de HITL global y creación de Workers,
+    # Tab. 1) + un rol por Engineer, aislados entre sí (ADR-016 §2.3:
+    # un Engineer nunca invoca skills de otro Engineer).
+    director:
+      can_escalate_to_hitl: true
+      can_spawn_workers: true
+      allowed_tables_prefix: []   # el Director no escribe tablas de datos directamente
+    engineer_datos:
+      allowed_tables_prefix: ["_raw", "_dev", "_test", "_stg", "_cleaned", "_rejected"]
+      denied_tables_prefix: ["_prod"]
+      can_escalate_to_hitl: false   # escala al Director, nunca directo (ADR-016 Tab. 1)
+    engineer_modelos:            # placeholder — sin skills reales hasta Rollout 2
+      allowed_tables_prefix: []
+      can_escalate_to_hitl: false
+    engineer_auditor:            # placeholder — sin skills reales hasta Rollout 3
+      allowed_tables_prefix: []
+      can_escalate_to_hitl: false
+      can_quarantine: true       # autoridad de cuarentena inmediata, ADR-019 §2.1bis.2
+
     data_cleanser:
       max_rows_per_write: 100000
       allowed_tables_prefix: ["_dev", "_test", "_stg", "_cleaned", "_rejected"]
@@ -43,9 +63,28 @@ policy_server:
     statistical_validator:
       allowed_tables_prefix: []   # solo lectura, no escribe tablas de datos
       denied_tools: ["write_table", "modify_table"]
-    orchestrator:
-      can_escalate_to_hitl: true
-      can_spawn_workers: true
+
+# ── PARALELISMO INTRA-SKILL (ADR-002) ──────────────────────────────────────
+mapreduce:
+  chain_strategy:
+    # ADR-002: "en submodo Runtime, la estrategia chain requiere
+    # confirmación explícita del operador" — campo que faltaba en este
+    # archivo; sin esto, chain no debe ejecutarse en Runtime.
+    enabled_in_runtime: false   # cambiar a true = confirmación explícita del operador
+    redis_key_prefix: "sigma:chain"
+
+# ── SANDBOXING DE EJECUCIÓN (ADR-017) ──────────────────────────────────────
+# Aplica solo a código sin autoría humana previa: skills generados
+# dinámicamente (ADR-014) y Workers (ADR-019 §2.1ter). No aplica a los
+# skills de Rollout 1/2 de autoría humana (ADR-017 §2.1).
+sandbox:
+  runtime: docker              # docker (SIGMA-FE/LE/ME) | gvisor (SIGMA-HE, opcional)
+  network: none                # deny-by-default, nunca allowlist (ADR-017 §2.3bis)
+  filesystem_allowlist: []     # declarado por skill vía su propio defaults.yaml
+  resource_limits:
+    memory_mb: 512
+    cpu_cores: 1
+  latent_container_min_trust_level: 2   # ADR-014 v1.3 — reduce overhead sin relajar contención
 
   patterns:
     deny_if_output_contains:

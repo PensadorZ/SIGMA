@@ -61,3 +61,8 @@ outputs/*
 !outputs/output_report.md
 !outputs/output_report.en.md
 !outputs/dashboard_run*.html
+
+sigma_fallback_logs/ 
+
+# Bocetos — tormenta de ideas, nunca en versión pública (tarea de inicio Rollout 2)
+docs/bocetos/

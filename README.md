@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Tests](https://img.shields.io/badge/tests-65%2F65%20passing-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
-![Hito](https://img.shields.io/badge/Hito%201-Completo-success)
+![Milestone](https://img.shields.io/badge/Milestone%202-Rollout%201%20complete-success)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0003--4849--3369-a6ce39?logo=orcid&logoColor=white)](https://orcid.org/0009-0003-4849-3369)
 
 > **SIGMA is not an answer. It's the system that learns to answer.**
@@ -20,7 +20,7 @@ development methodology (*vibecoding*) and documented from its
 architecture down to real production incident resolution.
 
 Multiple specialized agents collaborate under a triangular central
-orchestration architecture — Director/Auditor/Engineer, three
+orchestration architecture — Director/Engineer/Auditor, three
 orchestrators (see ADR-016) — to tackle projects in Data Engineering,
 Data Science, Data Analysis, General Engineering, Physics, Mathematics,
 and Axiometrics.
@@ -39,7 +39,7 @@ infrastructure and the real Tirendaz dataset (27,481 tweets):
 ✓✓ Pipeline completed successfully
 ```
 
-Full test suite: 
+Full test suite:
 ```
 ================================ 65 passed, 36 warnings in 20.80s ================================
 ```
@@ -50,6 +50,16 @@ Full test suite:
 > of end-to-end correctness isn't the test count itself, but the full
 > pipeline run against real Docker infrastructure shown above
 > (`warnings=[]`, all 6 skills `status=success`).
+
+**Milestone 2, Rollout 1 (hierarchical orchestration, ADR-016) is now
+complete** — verified against all 4 exit conditions: full pytest-bdd
+suite green (65/65, including `0004-statistical-validator`), 4+
+consecutive real runs without failure, circuit breaker verified with a
+forced non-recoverable failure (zero retries, fast fail confirmed), and
+full Langfuse trace verified end to end (parent trace + child events,
+confirmed directly against the database). See
+[docs/adr/adr-016-orquestacion-jerarquica.en.md](docs/adr/adr-016-orquestacion-jerarquica.en.md)
+for the complete Rollout plan.
 
 ### 📊 Live dashboard examples
 
@@ -79,6 +89,7 @@ locally — GitHub shows raw HTML source, not the rendered page).
 - 🔍 **Full traceability in Langfuse V2** — every decision, every tool call, with graceful degradation if Langfuse goes down ([ADR-011](docs/adr/adr-011-trazabilidad-langfuse.en.md))
 - 🐳 **100% self-hostable in its free variant** — SIGMA-FE runs entirely on your own machine, with no paid service dependency
 - 🔀 **4 cost tiers** — from SIGMA-FE ($0) to SIGMA-HE (high performance), each operable in Dev or Runtime submode
+- 🌳 **Hierarchical orchestration** — a Director coordinates specialized Engineers (Data, Models, Auditor), built by verified Rollouts, not all at once ([ADR-016](docs/adr/adr-016-orquestacion-jerarquica.en.md))
 
 ## ❌ What SIGMA does NOT do
 
@@ -99,7 +110,8 @@ later, if at all. SIGMA was built backwards, deliberately: epistemic
 memory, automated security, secrets management, and hallucination
 containment (`K ⊆ X`) existed **before** there was a single dashboard to
 show. Every architectural decision is backed by an explicit Architecture
-Decision Record (ADR) — 16 to date — not tacit convention.
+Decision Record (ADR) — 23 to date, all formally accepted — not tacit
+convention.
 
 ## Cost tiers
 
@@ -113,8 +125,11 @@ SIGMA adapts to four budget levels on the same architectural stack:
 | **SIGMA-HE** (High-Cost Engineer) | High | Enterprises requiring high performance |
 
 Each variant can additionally operate in **Dev** (debugging) or
-**Runtime** (production with real data) submode. Full detail in
-[SIGMA_v1.7.md](docs/SIGMA_v1.7.md).
+**Runtime** (production with real data) submode — a fully independent
+axis from cost, e.g. `--variant SIGMA-FE --submode Dev`. Full detail in
+[SIGMA_v2.4.md](docs/SIGMA_v2.4.md), the ecosystem's founding charter
+(`SIGMA_v1.7.md` is archived in `docs/Docs_hito1/` as the historical
+Milestone 1 record).
 
 ## Prerequisites
 
@@ -137,11 +152,36 @@ docker compose up -d
 
 # Quick test — synthetic data generated internally, no real
 # infrastructure dependency, fast iteration:
-python orchestrator.py --variant Dev --data-path ./data/tirendaz.csv
+python director_main.py --variant SIGMA-FE --submode Dev --data-path ./data/tirendaz.csv
 
 # Full run — real Tirendaz dataset (27,481 labeled tweets) against
 # real Docker infrastructure (PostgreSQL, Redis, MinIO, Langfuse):
-python orchestrator.py --variant Full --data-path ./data/tirendaz.csv
+python director_main.py --variant SIGMA-FE --submode Runtime --data-path ./data/tirendaz.csv
+```
+
+### 🩹 If the pipeline doesn't run — Docker troubleshooting
+
+The single most common blocker isn't the code, it's Docker not being up.
+Before anything else:
+
+```bash
+# 1. Make sure the Docker Desktop application itself is open and fully
+#    started (its tray icon stops animating once the engine is ready).
+
+# 2. Check what containers exist and their state:
+docker ps -a
+
+# 3. If they show as "Exited" (postgres, langfuse_db, redis, minio,
+#    langfuse), start them directly -- don't recreate:
+docker start sigma_postgres sigma_langfuse_db sigma_redis sigma_minio sigma_langfuse
+
+# 4. Confirm all 5 are "Up (healthy)" -- give it 10-15 seconds,
+#    especially Postgres and Langfuse:
+docker ps
+
+# 5. Only if the containers don't exist at all (fresh clone, or a
+#    reinstalled Docker Desktop), recreate them:
+docker compose up -d
 ```
 
 Full step-by-step guide in [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.en.md).
@@ -150,29 +190,31 @@ Full step-by-step guide in [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.en.
 
 | Document | What you'll find there |
 |---|---|
-| [SIGMA_v1.7.md](docs/SIGMA_v1.7.md) | Full Master Plan — architecture, variants, roadmap |
+| [SIGMA_v2.4.md](docs/SIGMA_v2.4.md) | Founding Charter — architecture, variants, roadmap, governance alignment |
 | [AGENTS_CREATOR.md](docs/AGENTS_CREATOR.md) | Founding charter — the contract every agent follows |
-| [docs/adr/](docs/adr/) | 16 Architecture Decision Records |
-| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Real incidents found and their exact resolution |
+| [docs/adr/](docs/adr/) | 23 Architecture Decision Records — see [adr-README.md](docs/adr/adr-README.md) for the full index |
+| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Real incidents found during Milestone 1 and their exact resolution |
+| [TROUBLESHOOTING_HITO2.md](docs/TROUBLESHOOTING_HITO2.md) | Real incidents found during Milestone 2 onward |
 
 
 ## 🏗️ Architecture
 
 ```
-sigma-hito1/
-├── orchestrator.py          # LangGraph graph, pipeline entry point
+sigma-hito2/
+├── director_main.py         # Entry point -- replaces orchestrator.py (Milestone 1, archived)
 ├── webhook_receiver.py      # Receives HITL responses from Zulip
 ├── sigma/                   # Installable Python package
-│   ├── core/                # Config, connections, tracing, checkpointer, state
+│   ├── core/                # Config, connections, tracing, checkpointer, state,
+│   │                         director.py, engineer_datos.py, skill_runner.py
 │   ├── hooks/                # Zulip notifications
-│   └── skills/                # Milestone 1's 6 skills, each with:
+│   └── skills/                # Engineer Datos's 7 skills, each with:
 │       └── 000X-name/          SKILL.md, skill.py, defaults.yaml,
 │                                references/, evals/, tests/
 ├── db/                      # PostgreSQL schema (7 tables)
 ├── docs/
-│   ├── SIGMA_v1.7.md         # The Harness's founding document
+│   ├── SIGMA_v2.4.md         # The Harness's founding document
 │   ├── AGENTS_CREATOR.md    # Agent governance contract
-│   └── adr/                  # 16 Architecture Decision Records
+│   └── adr/                  # 23 Architecture Decision Records
 └── tests/                   # Shared suite (65/65 passing)
 ```
 
@@ -184,11 +226,6 @@ full tree and folder-by-folder detail.
 With the same governance discipline that defines SIGMA, here are the
 real gaps in the current state — no gloss:
 
-- **The CLI still uses the previous variant scheme.**
-  `orchestrator.py --variant {Full,Lite,Dev,Runtime}` is still what's
-  live; migrating to the documented scheme (`SIGMA-FE/LE/ME/HE` +
-  `--submode`) was deliberately postponed to Milestone 2 to avoid
-  risking Milestone 1's verified 65-test suite.
 - **`INSTALL.md` and `PIPELINES.md` don't exist yet.** The step-by-step
   install guide currently lives in
   [ESTRUCTURA_PROYECTO.md](docs/ESTRUCTURA_PROYECTO.en.md).
@@ -199,12 +236,12 @@ real gaps in the current state — no gloss:
   the startup itself is still manual.
 - **No CI configured.** The 65/65 tests are verified locally; there's
   no GitHub Actions workflow running the suite on every push yet.
-- **`0011`'s dashboard verification — completed.** The most recent Full
-  run confirmed a fixed sentiment palette, correctly grouped languages,
-  and zero warnings (`warnings=[]`). One minor open question remains:
-  the "Top engagement" axis shows generic row identifiers (`row-0`,
-  `row-1`) instead of a more descriptive value — to be confirmed
-  whether this is the final design or a pending adjustment.
+- **`duration_ms` self-reporting bug in two skills, worked around, not
+  root-caused.** `0003-data-preprocessor` and `0011-viz-reporter`
+  self-report `0ms` regardless of real elapsed time; `skill_runner.py`
+  now measures wall-clock time independently and no longer trusts the
+  self-reported value, so this doesn't affect correctness — but the
+  underlying bug inside those two skills hasn't been diagnosed yet.
 - **The Zulip bot only reacts to direct messages, never to
   channel/topic messages** — this is Zulip's own platform behavior
   (Outgoing webhooks fire exclusively on DM or @-mention), not a SIGMA
@@ -217,14 +254,27 @@ real gaps in the current state — no gloss:
   degradation already verified, ADR-011), but notifications don't
   arrive while the account is inactive.
 
-None of these gaps block using Milestone 1 as documented — they're
-honestly the ground left for Milestone 2.
+None of these gaps block using the pipeline as documented.
 
 ## Project status
 
-Milestone 1 (Hito 1) complete: a 6-skill pipeline running end to end
-against real data, with 65/65 automated tests passing. Milestone 2 in
-design: three-level hierarchical orchestration (Director/Engineer).
+Milestone 1 complete: a 6-skill pipeline running end to end against
+real data, with 65/65 automated tests passing. The pipeline's output
+lives in MinIO — the finished product should be looked for in the
+dashboard generated there.
+
+**Milestone 2 — Rollout 1 complete** (Director + Engineer Data,
+`0000-0004, 0008, 0011`, ADR-016): hierarchical three-orchestrator
+architecture (Director/Engineer Data/Engineer Models/Engineer Auditor),
+built in verified phases. All 4 exit conditions met — full test suite
+green, multiple consecutive real runs, circuit breaker verified with a
+forced failure, and Langfuse traceability confirmed end to end. Cost
+variant scheme migrated to `SIGMA-FE/LE/ME/HE` + independent `Dev/Runtime`
+submode across all of Rollout 1's code.
+
+Rollout 2 (Engineer Models: `0005-0007, 0009-0010`) and Rollout 3
+(Engineer Auditor: `0012-0015`, gated behind ADR-017 sandboxing) are
+next.
 
 ## License
 

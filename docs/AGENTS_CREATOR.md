@@ -2,7 +2,7 @@
 
 **SIGMA v1.7 — Sistema Integrado para la Gestión Multiagente**
 Autor: Prof. Marx Agustín García Delgado
-Versión: 1.2.0
+Versión: 1.3.0
 Repositorio: `PensadorZ/SIGMA` — repositorio único (código y documentación conviven en el mismo repo)
 
 ---
@@ -163,7 +163,7 @@ la intención final es comercialmente beneficiosa para esa organización.
 | Hito | Contenido |
 |---|---|
 | Hito 1 | Pipeline lineal LangGraph, 6 skills (0000-0003, 0008, 0011) — cerrado, 65/65 tests pasando |
-| Hito 2 | Arquitectura de tres orquestadores con subgrafos (patrón Director/Engineer jerárquico, [ADR-016](docs/adr/adr-016-orquestacion-jerarquica.md)), contexto inyectado de solo lectura al arrancar (nunca memoria mutable compartida en vivo) |
+| Hito 2 | Arquitectura de tres orquestadores con subgrafos (patrón Director/Engineer jerárquico, [ADR-016](docs/adr/adr-016-orquestacion-jerarquica.md)). Memoria en dos planos: contexto de solo lectura al arrancar sigue siendo el comportamiento por defecto *dentro* de cada corrida; la Memoria Operativa entre Corridas (Ag-DR, [ADR-018](docs/adr/adr-018-memoria-operativa-agdr.md)) es la excepción explícita y documentada — un Ag-DR solo puede informar una decisión futura del Director tras aprobación humana explícita (ADR-018 §2.5), nunca antes |
 | Hito 3 | Streaming en tiempo real [ADR-015](docs\adr\adr-015-hamilton-selector-streaming.md), Hamilton Selector entre Kafka/Redis Streams/Faust |
 | Hitos futuros (sin numerar) | Análisis financiero de tarjetahabientes (datos anonimizados/pseudonimizados), análisis de video/imagen, línea de seguridad bajo los límites de la sección 7 |
 
@@ -178,15 +178,22 @@ Esta tabla documenta el estado real de cada estándar hoy:
 
 | Estándar | Rol | Estado en SIGMA |
 |---|---|---|
-| MCP | Conecta modelos a herramientas/datos | No implementado — evaluado para Hito 2 |
-| A2A | Negociación agente-a-agente, Agent Cards | No implementado — ningún componente actual tiene Agent Card; candidato para Director/Engineer/Auditor ([ADR-016](docs/adr/adr-016-orquestacion-jerarquica.md)) |
-| A2UI | Interfaces generativas seguras | No implementado — candidato para dashboards reactivos del Hito 3 [ADR-015](docs\adr\adr-015-hamilton-selector-streaming.md) |
-| AP2 / UCP | Comercio autónomo entre agentes | Fuera de alcance — SIGMA no gestiona transacciones |
+| MCP — esquema declarativo | `mcp_servers` en Agent Card | Implementado, validado por Policy Server |
+| MCP — transporte real | Host-cliente-servidor | Diseñado ([ADR-019](docs/adr/adr-019-identidad-agentes-cloe.md) §2.7), sin código — sin fecha |
+| A2A — contrato de mensaje | `send_a2a_message` | Implementado, activo (ADR-019 §2.6) |
+| A2A — transporte de red | HTTP/SSE expuesto | Diseñado, diferido a cuando haga falta |
+| A2UI | Candidato (`0011-viz-reporter`) | Solo el nombre existe en la documentación — el protocolo real no está diseñado todavía |
+| AP2 / UCP | Comercio autónomo entre agentes | Fuera de alcance — descartado explícitamente |
+
+> Estado detallado con el marco de cuatro valores (Álgebra Axiométrica
+> vs. lógica de Belnap) en `SIGMA_v2.3.md`, sección "Interoperabilidad
+> — más allá del binario implementado/no implementado".
 
 Ningún skill ni el orquestador del Hito 1 constituye un "Agente" A2A-
 compliant en sentido estricto: son la lógica de orquestación y las
-funciones que el Arnés coordina. Formalizar esta capa es trabajo
-explícito del Hito 2, no una omisión del Hito 1.
+funciones que el Arnés coordina. Formalizar esta capa fue trabajo
+explícito de Rollout 1 de Hito 2 para A2A/MCP declarativo — transporte
+real y A2UI completo siguen abiertos.
 
 ---
 
@@ -197,3 +204,4 @@ explícito del Hito 2, no una omisión del Hito 1.
 | 1.0.0 | Eco MultiAgentes 4 Skills 2, Julio 2026 | Primera generación como archivo real. Anteriormente solo se referenciaba, nunca se había materializado. Consolida decisiones ya tomadas a lo largo de múltiples conversaciones. |
 | 1.1.0 | Julio 2026 | Actualizado a SIGMA v1.7. Migración del esquema de variantes de Full/Lite/Dev/Runtime a SIGMA-FE/LE/ME/HE con Dev/Runtime como submodos transversales. Unificación en un único repositorio (`PensadorZ/SIGMA`) — se retira la distinción entre repo de documentación y repo de código. Rutas de código actualizadas para reflejar la reestructuración dentro del paquete `sigma/` (`sigma/skills/`, `sigma/core/`, `sigma/hooks/`). Corregido nombre de carpeta de archivo histórico a `scripts/old_scripts_sigma/`. |
 | 1.2.0 | Julio 2026 | Se incorpora la fórmula Agente = Modelo + Arnés y se documenta el estado actual frente a los estándares de interoperabilidad (MCP, A2A, A2UI, AP2, UCP), verificados contra el curso "Vibecoding con Agentes Multiagente" (Google-Kaggle). Ningún componente del Hito 1 es un Agente A2A-compliant — es el Arnés que los precede, por diseño. |
+| 1.3.0 | Julio 2026 | Resueltas las dos contradicciones/imprecisiones detectadas en auditoría cruzada contra `SIGMA_v2.3.md`: (a) §8 corregida — "nunca memoria mutable compartida en vivo" matizada como comportamiento por defecto *dentro* de una corrida, con la Memoria Operativa entre Corridas (Ag-DR, ADR-018) documentada como excepción explícita gated por aprobación humana (ADR-018 §2.5), no como contradicción; (b) §9 — tabla binaria "implementado/no implementado" reemplazada por versión de tres estados por componente (esquema vs. transporte en MCP y A2A), con puente a `SIGMA_v2.3.md` para quien quiera el marco completo de cuatro valores (Álgebra Axiométrica vs. Belnap). |

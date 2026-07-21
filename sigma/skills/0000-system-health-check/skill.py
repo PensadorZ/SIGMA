@@ -1,9 +1,19 @@
 # =============================================================================
 # skills/0000-system-health-check/skill.py
-# SIGMA v1.5 · Eco MultiAgentes 3 Skills 1 / Eco MultiAgentes 4 Skills 2
+# SIGMA v1.5 · Eco MultiAgentes 3 Skills 1 / Eco MultiAgentes 4 Skills 2 / Hito 2
 # Autor: Prof. Marx Agustín García Delgado
-# Versión: 2.0.0
+# Versión: 2.1.0
 # =============================================================================
+# NOTA v2.1.0 — MIGRACIÓN DE VARIANTES (Hito 2, cierre de Rollout 1):
+# HealthCheckOutput.sigma_variant pasa de Literal["Full","Lite","Dev","Runtime"]
+# a Literal["SIGMA-FE","SIGMA-LE","SIGMA-ME","SIGMA-HE"], y se añade
+# sigma_submode (Dev/Runtime) como campo propio — antes un solo campo
+# mezclaba costo y submodo. is_dev_mode(state) en _common.py ya lee
+# sigma_submode, no sigma_variant=='Dev' — este skill es el único de los
+# 4 migrados que también necesitó cambios propios, porque es el único
+# que persiste la variante directamente en su output (los otros 3 solo
+# delegan en is_dev_mode() sin guardar el valor).
+#
 # NOTA v2.0.0 — FUSIÓN (Opción C, decidida en Eco MultiAgentes 4 Skills 2,
 # confirmada como política por defecto para cualquier otro skill con el
 # mismo patrón de divergencia entre líneas de trabajo paralelas):
@@ -122,7 +132,8 @@ class HealthCheckOutput(BaseModel):
     """
     trace_id: str
     run_id: str
-    sigma_variant: Literal["Full", "Lite", "Dev", "Runtime"]
+    sigma_variant: Literal["SIGMA-FE", "SIGMA-LE", "SIGMA-ME", "SIGMA-HE"]
+    sigma_submode: Literal["Dev", "Runtime"]
     verdict: Literal["HEALTHY", "DEGRADED", "BLOCKED"]
     verdict_reason: str
 
@@ -251,6 +262,7 @@ def _build_output(
     trace_id: str,
     run_id: str,
     sigma_variant: str,
+    sigma_submode: str,
     duration_ms: int,
     pg_result: ServiceCheckResult,
     redis_result: ServiceCheckResult,
@@ -311,6 +323,7 @@ def _build_output(
         trace_id=trace_id,
         run_id=run_id,
         sigma_variant=sigma_variant,
+        sigma_submode=sigma_submode,
         verdict=verdict,
         verdict_reason=verdict_reason,
         services=services,
@@ -328,7 +341,8 @@ def run(state: PipelineState) -> SkillResult:
     with timer() as t:
         trace_id = state.get("trace_id", "unknown")
         run_id = state.get("pipeline_run_id", trace_id)
-        sigma_variant = state.get("sigma_variant", "Full")
+        sigma_variant = state.get("sigma_variant", "SIGMA-FE")
+        sigma_submode = state.get("sigma_submode", "Dev")
 
         try:
             cfg = load_defaults(SKILL_DIR)
@@ -343,6 +357,7 @@ def run(state: PipelineState) -> SkillResult:
         if is_dev_mode(state):
             output = _build_output(
                 trace_id=trace_id, run_id=run_id, sigma_variant=sigma_variant,
+                sigma_submode=sigma_submode,
                 duration_ms=0,
                 pg_result=ServiceCheckResult("postgres", True, 0),
                 redis_result=ServiceCheckResult("redis", True, 0),
@@ -411,6 +426,7 @@ def run(state: PipelineState) -> SkillResult:
 
         output = _build_output(
             trace_id=trace_id, run_id=run_id, sigma_variant=sigma_variant,
+            sigma_submode=sigma_submode,
             duration_ms=t["ms"],
             pg_result=pg_result, redis_result=redis_result,
             minio_result=minio_result, langfuse_result=langfuse_result,
